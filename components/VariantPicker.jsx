@@ -10,9 +10,23 @@ export function computePriceAdjustment(variantMetadata, selections) {
     for (const [key, spec] of Object.entries(variantMetadata)) {
         const selected = selections[key]
         if (selected == null) continue
+        // Check price_modifiers map (keyed by option value string)
         const modifiers = spec?.price_modifiers
         if (modifiers && modifiers[selected] != null) {
             delta += Number(modifiers[selected])
+            continue
+        }
+        // Check if options are objects with their own price_modifier/delta field
+        const rawOptions = spec?.options || (Array.isArray(spec) ? spec : [])
+        for (const opt of rawOptions) {
+            if (typeof opt === 'object' && opt !== null) {
+                const v = String(opt.value ?? opt.label ?? opt.name ?? '')
+                if (v === selected) {
+                    const d = opt.price_modifier ?? opt.delta
+                    if (d != null) delta += Number(d)
+                    break
+                }
+            }
         }
     }
     return delta
@@ -31,8 +45,18 @@ export default function VariantPicker({ variantMetadata, value = {}, onChange })
                 const label = key.charAt(0).toUpperCase() + key.slice(1)
 
                 if (Array.isArray(spec?.options) || Array.isArray(spec)) {
-                    const options = spec?.options || spec
+                    const rawOptions = spec?.options || spec
                     const modifiers = spec?.price_modifiers || {}
+                    // Normalise: each option becomes { label, value, delta }
+                    const options = rawOptions.map((opt) => {
+                        if (typeof opt === 'string' || typeof opt === 'number') {
+                            const v = String(opt)
+                            return { label: v, value: v, delta: modifiers[v] ?? null }
+                        }
+                        const v = String(opt.value ?? opt.label ?? opt.name ?? JSON.stringify(opt))
+                        const l = String(opt.label ?? opt.value ?? opt.name ?? v)
+                        return { label: l, value: v, delta: opt.price_modifier ?? opt.delta ?? modifiers[v] ?? null }
+                    })
                     return (
                         <div key={key}>
                             <p className="text-sm font-medium text-slate-700 mb-2">
@@ -40,28 +64,25 @@ export default function VariantPicker({ variantMetadata, value = {}, onChange })
                                 {spec?.required && <span className="text-red-400 ml-1">*</span>}
                             </p>
                             <div className="flex flex-wrap gap-2">
-                                {options.map((opt) => {
-                                    const delta = modifiers[opt]
-                                    return (
-                                        <button
-                                            key={opt}
-                                            type="button"
-                                            onClick={() => handleChange(key, opt)}
-                                            className={`px-4 py-1.5 text-sm rounded-full border transition ${
-                                                value[key] === opt
-                                                    ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
-                                                    : 'border-slate-200 text-slate-600 hover:border-slate-400'
-                                            }`}
-                                        >
-                                            {opt}
-                                            {delta != null && delta !== 0 && (
-                                                <span className="ml-1 text-xs opacity-75">
-                                                    {delta > 0 ? `+₦${Number(delta).toLocaleString()}` : `-₦${Math.abs(delta).toLocaleString()}`}
-                                                </span>
-                                            )}
-                                        </button>
-                                    )
-                                })}
+                                {options.map(({ label: optLabel, value: optVal, delta }) => (
+                                    <button
+                                        key={optVal}
+                                        type="button"
+                                        onClick={() => handleChange(key, optVal)}
+                                        className={`px-4 py-1.5 text-sm rounded-full border transition ${
+                                            value[key] === optVal
+                                                ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
+                                                : 'border-slate-200 text-slate-600 hover:border-slate-400'
+                                        }`}
+                                    >
+                                        {optLabel}
+                                        {delta != null && delta !== 0 && (
+                                            <span className="ml-1 text-xs opacity-75">
+                                                {delta > 0 ? `+₦${Number(delta).toLocaleString()}` : `-₦${Math.abs(delta).toLocaleString()}`}
+                                            </span>
+                                        )}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )
