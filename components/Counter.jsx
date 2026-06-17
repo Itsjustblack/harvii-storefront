@@ -1,26 +1,28 @@
 'use client'
-import { addToCart, removeFromCart } from "@/lib/features/cart/cartSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { MinusIcon, PlusIcon } from 'lucide-react'
+import { useDispatch, useSelector } from 'react-redux'
+import { updateQuantity } from '@/lib/features/cart/cartSlice'
 
-const Counter = ({ productId }) => {
-
-    const { cartItems } = useSelector(state => state.cart);
-
-    const dispatch = useDispatch();
-
-    const addToCartHandler = () => {
-        dispatch(addToCart({ productId }))
-    }
-
-    const removeFromCartHandler = () => {
-        dispatch(removeFromCart({ productId }))
-    }
+const Counter = ({ product_id }) => {
+    const dispatch = useDispatch()
+    const item = useSelector((s) => s.cart.cartItems[product_id])
+    const quantity = item?.quantity || 0
 
     return (
-        <div className="inline-flex items-center gap-1 sm:gap-3 px-3 py-1 rounded border border-slate-200 max-sm:text-sm text-slate-600">
-            <button onClick={removeFromCartHandler} className="p-1 select-none">-</button>
-            <p className="p-1">{cartItems[productId]}</p>
-            <button onClick={addToCartHandler} className="p-1 select-none">+</button>
+        <div className="inline-flex items-center gap-3 border border-slate-200 rounded-full px-3 py-1.5">
+            <button
+                onClick={() => dispatch(updateQuantity({ product_id, delta: -1 }))}
+                className="text-slate-600 hover:text-slate-900 active:scale-90 transition"
+            >
+                <MinusIcon size={14} />
+            </button>
+            <span className="w-5 text-center text-sm font-medium text-slate-800">{quantity}</span>
+            <button
+                onClick={() => dispatch(updateQuantity({ product_id, delta: 1 }))}
+                className="text-slate-600 hover:text-slate-900 active:scale-90 transition"
+            >
+                <PlusIcon size={14} />
+            </button>
         </div>
     )
 }

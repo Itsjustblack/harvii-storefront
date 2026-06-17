@@ -1,104 +1,113 @@
 'use client'
-import Counter from "@/components/Counter";
-import OrderSummary from "@/components/OrderSummary";
-import PageTitle from "@/components/PageTitle";
-import { deleteItemFromCart } from "@/lib/features/cart/cartSlice";
-import { Trash2Icon } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector, useDispatch } from 'react-redux'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Trash2Icon } from 'lucide-react'
+import Counter from '@/components/Counter'
+import CartSummary from '@/components/CartSummary'
+import OthersAlsoBought from '@/components/OthersAlsoBought'
+import { deleteItemFromCart } from '@/lib/features/cart/cartSlice'
 
 export default function Cart() {
+    const dispatch = useDispatch()
+    const { cartItems, total } = useSelector((s) => s.cart)
 
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
-    
-    const { cartItems } = useSelector(state => state.cart);
-    const products = useSelector(state => state.product.list);
+    const cartArray = Object.entries(cartItems).map(([product_id, item]) => ({
+        product_id,
+        ...item,
+    }))
 
-    const dispatch = useDispatch();
+    const subtotal = cartArray.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-    const [cartArray, setCartArray] = useState([]);
-    const [totalPrice, setTotalPrice] = useState(0);
-
-    const createCartArray = () => {
-        setTotalPrice(0);
-        const cartArray = [];
-        for (const [key, value] of Object.entries(cartItems)) {
-            const product = products.find(product => product.id === key);
-            if (product) {
-                cartArray.push({
-                    ...product,
-                    quantity: value,
-                });
-                setTotalPrice(prev => prev + product.price * value);
-            }
-        }
-        setCartArray(cartArray);
+    if (cartArray.length === 0) {
+        return (
+            <div className="min-h-[80vh] mx-6 flex flex-col items-center justify-center text-slate-400 gap-4">
+                <p className="text-5xl">🛒</p>
+                <h1 className="text-2xl font-semibold text-slate-500">Your cart is empty</h1>
+                <Link href="/shop" className="px-6 py-2.5 bg-[var(--primary)] text-white rounded-full text-sm hover:opacity-90 transition">
+                    Start Shopping
+                </Link>
+            </div>
+        )
     }
 
-    const handleDeleteItemFromCart = (productId) => {
-        dispatch(deleteItemFromCart({ productId }))
-    }
-
-    useEffect(() => {
-        if (products.length > 0) {
-            createCartArray();
-        }
-    }, [cartItems, products]);
-
-    return cartArray.length > 0 ? (
+    return (
         <div className="min-h-screen mx-6 text-slate-800">
+            <div className="max-w-7xl mx-auto py-8">
+                <h1 className="text-2xl font-semibold mb-8">
+                    My Cart <span className="text-slate-400 font-normal text-lg">({total})</span>
+                </h1>
 
-            <div className="max-w-7xl mx-auto ">
-                {/* Title */}
-                <PageTitle heading="My Cart" text="items in your cart" linkText="Add more" />
-
-                <div className="flex items-start justify-between gap-5 max-lg:flex-col">
-
-                    <table className="w-full max-w-4xl text-slate-600 table-auto">
-                        <thead>
-                            <tr className="max-sm:text-sm">
-                                <th className="text-left">Product</th>
-                                <th>Quantity</th>
-                                <th>Total Price</th>
-                                <th className="max-md:hidden">Remove</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {
-                                cartArray.map((item, index) => (
-                                    <tr key={index} className="space-x-2">
-                                        <td className="flex gap-3 my-4">
-                                            <div className="flex gap-3 items-center justify-center bg-slate-100 size-18 rounded-md">
-                                                <Image src={item.images[0]} className="h-14 w-auto" alt="" width={45} height={45} />
-                                            </div>
-                                            <div>
-                                                <p className="max-sm:text-sm">{item.name}</p>
-                                                <p className="text-xs text-slate-500">{item.category}</p>
-                                                <p>{currency}{item.price}</p>
+                <div className="flex items-start justify-between gap-8 max-lg:flex-col">
+                    {/* Cart items table */}
+                    <div className="flex-1 overflow-x-auto">
+                        <table className="w-full text-slate-600 text-sm">
+                            <thead>
+                                <tr className="border-b border-slate-100">
+                                    <th className="text-left pb-4 font-medium text-slate-500">Product</th>
+                                    <th className="pb-4 font-medium text-slate-500">Quantity</th>
+                                    <th className="pb-4 font-medium text-slate-500">Total</th>
+                                    <th className="pb-4 max-md:hidden" />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {cartArray.map((item) => (
+                                    <tr key={item.product_id} className="border-b border-slate-50">
+                                        <td className="py-5">
+                                            <div className="flex gap-4 items-center">
+                                                <div className="bg-slate-100 rounded-xl flex items-center justify-center size-16 shrink-0">
+                                                    {item.image_url ? (
+                                                        <Image
+                                                            src={item.image_url}
+                                                            alt={item.name}
+                                                            width={56}
+                                                            height={56}
+                                                            className="object-contain w-full h-full rounded-xl"
+                                                        />
+                                                    ) : (
+                                                        <div className="text-slate-300 text-xs">img</div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <Link href={`/product/${item.product_id}`} className="font-medium text-slate-800 hover:underline line-clamp-2 max-w-48">
+                                                        {item.name}
+                                                    </Link>
+                                                    <p className="text-slate-400 text-xs mt-0.5">₦{Number(item.price).toLocaleString()} each</p>
+                                                    {item.variants && Object.keys(item.variants).length > 0 && (
+                                                        <p className="text-slate-400 text-xs mt-0.5">
+                                                            {Object.entries(item.variants).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="text-center">
-                                            <Counter productId={item.id} />
+                                        <td className="py-5 text-center">
+                                            <div className="flex justify-center">
+                                                <Counter product_id={item.product_id} />
+                                            </div>
                                         </td>
-                                        <td className="text-center">{currency}{(item.price * item.quantity).toLocaleString()}</td>
-                                        <td className="text-center max-md:hidden">
-                                            <button onClick={() => handleDeleteItemFromCart(item.id)} className=" text-red-500 hover:bg-red-50 p-2.5 rounded-full active:scale-95 transition-all">
-                                                <Trash2Icon size={18} />
+                                        <td className="py-5 text-center font-medium text-slate-800">
+                                            ₦{(item.price * item.quantity).toLocaleString()}
+                                        </td>
+                                        <td className="py-5 text-center max-md:hidden">
+                                            <button
+                                                onClick={() => dispatch(deleteItemFromCart({ product_id: item.product_id }))}
+                                                className="text-red-400 hover:bg-red-50 p-2 rounded-full active:scale-95 transition"
+                                            >
+                                                <Trash2Icon size={16} />
                                             </button>
                                         </td>
                                     </tr>
-                                ))
-                            }
-                        </tbody>
-                    </table>
-                    <OrderSummary totalPrice={totalPrice} items={cartArray} />
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <CartSummary subtotal={subtotal} itemCount={total} />
                 </div>
             </div>
-        </div>
-    ) : (
-        <div className="min-h-[80vh] mx-6 flex items-center justify-center text-slate-400">
-            <h1 className="text-2xl sm:text-4xl font-semibold">Your cart is empty</h1>
+
+            <OthersAlsoBought context="cart" />
         </div>
     )
 }

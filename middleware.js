@@ -1,0 +1,32 @@
+import { NextResponse } from 'next/server'
+
+export function middleware(request) {
+    const { pathname } = request.nextUrl
+    const host = request.headers.get('host') || ''
+
+    // Skip internal Next.js routes
+    if (
+        pathname.startsWith('/_next') ||
+        pathname.startsWith('/api') ||
+        pathname.startsWith('/favicon')
+    ) {
+        return NextResponse.next()
+    }
+
+    // Extract slug from subdomain: {slug}.harvii.shop
+    // In dev, fall back to NEXT_PUBLIC_DEV_SLUG
+    const harviDomain = process.env.NEXT_PUBLIC_HARVII_DOMAIN || 'harvii.shop'
+    let slug = process.env.NEXT_PUBLIC_DEV_SLUG || 'demo'
+
+    if (host.endsWith(`.${harviDomain}`)) {
+        slug = host.replace(`.${harviDomain}`, '').split('.')[0]
+    }
+
+    const response = NextResponse.next()
+    response.headers.set('x-slug', slug)
+    return response
+}
+
+export const config = {
+    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+}

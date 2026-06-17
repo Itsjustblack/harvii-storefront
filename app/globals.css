@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+:root {
+    --primary: #000000;
+    --primary-hover: color-mix(in srgb, var(--primary) 85%, black);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 @layer components {
     @keyframes marqueeScroll {
         0% {
