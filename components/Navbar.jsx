@@ -1,67 +1,158 @@
 'use client'
-import { Search, ShoppingCart } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { Search, ShoppingCart, User, LogOut, Package } from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useStorefront } from '@/context/StorefrontContext'
+import { clearAuth } from '@/lib/features/auth/authSlice'
 
 const Navbar = () => {
-
-    const router = useRouter();
+    const router = useRouter()
+    const dispatch = useDispatch()
+    const { config } = useStorefront()
 
     const [search, setSearch] = useState('')
-    const cartCount = useSelector(state => state.cart.total)
+    const [menuOpen, setMenuOpen] = useState(false)
+    const [mounted, setMounted] = useState(false)
+    const menuRef = useRef(null)
+
+    const cartCount = useSelector((s) => s.cart.total)
+    const { token, email } = useSelector((s) => s.auth)
+
+    useEffect(() => setMounted(true), [])
 
     const handleSearch = (e) => {
         e.preventDefault()
-        router.push(`/shop?search=${search}`)
+        if (search.trim()) router.push(`/shop?q=${encodeURIComponent(search.trim())}`)
     }
+
+    const handleLogout = () => {
+        dispatch(clearAuth())
+        setMenuOpen(false)
+        router.push('/')
+    }
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handler = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
+        }
+        document.addEventListener('mousedown', handler)
+        return () => document.removeEventListener('mousedown', handler)
+    }, [])
+
+    const storeName = config?.store_name || 'Harvii Store'
+    const logoUrl = config?.logo_url
 
     return (
         <nav className="relative bg-white">
             <div className="mx-6">
-                <div className="flex items-center justify-between max-w-7xl mx-auto py-4  transition-all">
+                <div className="flex items-center justify-between max-w-7xl mx-auto py-4 transition-all">
 
-                    <Link href="/" className="relative text-4xl font-semibold text-slate-700">
-                        <span className="text-green-600">go</span>cart<span className="text-green-600 text-5xl leading-0">.</span>
-                        <p className="absolute text-xs font-semibold -top-1 -right-8 px-3 p-0.5 rounded-full flex items-center gap-2 text-white bg-green-500">
-                            plus
-                        </p>
+                    {/* Brand / Logo */}
+                    <Link href="/" className="flex items-center">
+                        {logoUrl ? (
+                            <Image
+                                src={logoUrl}
+                                alt={storeName}
+                                width={120}
+                                height={40}
+                                className="object-contain max-h-10"
+                            />
+                        ) : (
+                            <span className="text-2xl font-semibold text-slate-800">{storeName}</span>
+                        )}
                     </Link>
 
                     {/* Desktop Menu */}
-                    <div className="hidden sm:flex items-center gap-4 lg:gap-8 text-slate-600">
-                        <Link href="/">Home</Link>
-                        <Link href="/shop">Shop</Link>
-                        <Link href="/">About</Link>
-                        <Link href="/">Contact</Link>
+                    <div className="hidden md:flex items-center gap-6 lg:gap-8 text-slate-600 text-sm">
+                        <Link href="/" className="hover:text-slate-900 transition">Home</Link>
+                        <Link href="/shop" className="hover:text-slate-900 transition">Shop</Link>
+                        <Link href="/track" className="hover:text-slate-900 transition">Track Order</Link>
+                        {config?.contact_email || config?.contact_phone ? (
+                            <Link href="/contact" className="hover:text-slate-900 transition">Contact</Link>
+                        ) : null}
 
-                        <form onSubmit={handleSearch} className="hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full">
-                            <Search size={18} className="text-slate-600" />
-                            <input className="w-full bg-transparent outline-none placeholder-slate-600" type="text" placeholder="Search products" value={search} onChange={(e) => setSearch(e.target.value)} required />
+                        {/* Search */}
+                        <form onSubmit={handleSearch} className="hidden xl:flex items-center gap-2 bg-slate-100 px-4 py-2.5 rounded-full text-sm">
+                            <Search size={16} className="text-slate-500 shrink-0" />
+                            <input
+                                className="w-48 bg-transparent outline-none placeholder-slate-500"
+                                type="text"
+                                placeholder="Search products…"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
                         </form>
 
-                        <Link href="/cart" className="relative flex items-center gap-2 text-slate-600">
+                        {/* Cart */}
+                        <Link href="/cart" className="relative flex items-center gap-1.5 text-slate-600 hover:text-slate-900 transition">
                             <ShoppingCart size={18} />
-                            Cart
-                            <button className="absolute -top-1 left-3 text-[8px] text-white bg-slate-600 size-3.5 rounded-full">{cartCount}</button>
+                            <span>Cart</span>
+                            {cartCount > 0 && (
+                                <span className="absolute -top-2 left-3 text-[9px] text-white bg-[var(--primary)] size-4 rounded-full flex items-center justify-center font-medium">
+                                    {cartCount > 9 ? '9+' : cartCount}
+                                </span>
+                            )}
                         </Link>
 
-                        <button className="px-8 py-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full">
-                            Login
-                        </button>
-
+                        {/* Auth */}
+                        {mounted && token ? (
+                            <div className="relative" ref={menuRef}>
+                                <button
+                                    onClick={() => setMenuOpen((v) => !v)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-full transition text-sm"
+                                >
+                                    <User size={15} />
+                                    <span className="max-w-24 truncate">{email}</span>
+                                </button>
+                                {menuOpen && (
+                                    <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
+                                        <Link href="/account" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition">
+                                            <Package size={15} /> My Orders
+                                        </Link>
+                                        <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition">
+                                            <LogOut size={15} /> Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <Link
+                                href="/account/login"
+                                className="px-6 py-2 bg-[var(--primary)] hover:opacity-90 transition text-white rounded-full text-sm"
+                            >
+                                Login
+                            </Link>
+                        )}
                     </div>
 
-                    {/* Mobile User Button  */}
-                    <div className="sm:hidden">
-                        <button className="px-7 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-sm transition text-white rounded-full">
-                            Login
-                        </button>
+                    {/* Mobile: cart + auth icons */}
+                    <div className="md:hidden flex items-center gap-3">
+                        <form onSubmit={handleSearch} className="flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-full text-sm">
+                            <Search size={16} className="text-slate-500 shrink-0" />
+                            <input
+                                className="w-28 bg-transparent outline-none placeholder-slate-500 text-xs"
+                                type="text"
+                                placeholder="Search…"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </form>
+                        <Link href="/cart" className="relative text-slate-600">
+                            <ShoppingCart size={20} />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 text-[9px] text-white bg-[var(--primary)] size-4 rounded-full flex items-center justify-center font-medium">
+                                    {cartCount > 9 ? '9+' : cartCount}
+                                </span>
+                            )}
+                        </Link>
                     </div>
                 </div>
             </div>
-            <hr className="border-gray-300" />
+            <hr className="border-gray-200" />
         </nav>
     )
 }

@@ -2,7 +2,6 @@
 import { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Search, MessageCircle, ChevronRight } from 'lucide-react'
-import Link from 'next/link'
 import OrderTracker from '@/components/OrderTracker'
 import { useStorefront } from '@/context/StorefrontContext'
 import { trackOrder } from '@/lib/api'
@@ -49,17 +48,17 @@ const STATUS_COLORS = {
     paid: 'bg-green-100 text-green-700',
 }
 
-function OrderList({ orders, email, config }) {
+function OrderList({ orders, config, onSelect }) {
     return (
         <div className="space-y-3">
             {orders.map((order) => {
                 const status = order.delivery_status || order.status || 'pending'
                 const colorClass = STATUS_COLORS[status] || 'bg-slate-100 text-slate-600'
                 return (
-                    <Link
+                    <button
                         key={order.reference}
-                        href={`/track?ref=${order.reference}&email=${encodeURIComponent(email)}`}
-                        className="flex items-center justify-between bg-white border border-slate-200 rounded-2xl px-5 py-4 hover:border-slate-300 hover:shadow-sm transition"
+                        onClick={() => onSelect(order.reference)}
+                        className="w-full flex items-center justify-between bg-white border border-slate-200 rounded-2xl px-5 py-4 hover:border-slate-300 hover:shadow-sm transition text-left"
                     >
                         <div>
                             <p className="font-mono text-sm font-semibold text-slate-800">{order.reference}</p>
@@ -80,9 +79,9 @@ function OrderList({ orders, email, config }) {
                                     ₦{Number(order.total).toLocaleString()}
                                 </span>
                             )}
-                            <ChevronRight size={16} className="text-slate-400" />
+                            <ChevronRight size={16} className="text-slate-400 shrink-0" />
                         </div>
-                    </Link>
+                    </button>
                 )
             })}
             <WhatsAppCTA ref={null} config={config} />
@@ -100,10 +99,10 @@ function TrackContent() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
 
-    const doSearch = async (e, overrideEmail, overrideRef) => {
+    const doSearch = async (e, overrideEmail, overrideRef, fromList = false) => {
         if (e) e.preventDefault()
         const searchEmail = (overrideEmail ?? email).trim()
-        const searchRef = (overrideRef ?? ref).trim()
+        const searchRef = overrideRef !== undefined ? overrideRef.trim() : ref.trim()
         if (!searchEmail) return
         setLoading(true)
         setError(null)
@@ -113,7 +112,7 @@ function TrackContent() {
             if (data.orders) {
                 setResult({ type: 'list', data: data.orders })
             } else {
-                setResult({ type: 'single', data })
+                setResult({ type: 'single', data, fromList })
             }
         } catch (err) {
             setError(
@@ -181,11 +180,23 @@ function TrackContent() {
                 )}
 
                 {result?.type === 'list' && (
-                    <OrderList orders={result.data} email={email} config={config} />
+                    <OrderList
+                        orders={result.data}
+                        config={config}
+                        onSelect={(orderRef) => doSearch(null, email, orderRef, true)}
+                    />
                 )}
 
                 {result?.type === 'single' && (
                     <>
+                        {result.fromList && (
+                            <button
+                                onClick={() => doSearch(null, email, '')}
+                                className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-4 transition"
+                            >
+                                ← Back to orders
+                            </button>
+                        )}
                         <OrderTracker order={result.data} />
                         <WhatsAppCTA ref={result.data?.reference} config={config} />
                     </>

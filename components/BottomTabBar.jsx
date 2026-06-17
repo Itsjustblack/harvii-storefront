@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutGrid, ShoppingBag, ShoppingCart, User } from 'lucide-react'
 import { useSelector } from 'react-redux'
+import { useState, useEffect } from 'react'
 
 const tabs = [
     { href: '/', label: 'Home', Icon: LayoutGrid },
@@ -14,6 +15,8 @@ const tabs = [
 export default function BottomTabBar() {
     const pathname = usePathname()
     const cartCount = useSelector((s) => s.cart.total)
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => setMounted(true), [])
 
     return (
         <nav className="md:hidden sticky top-0 z-40 bg-white border-b border-slate-200">
@@ -30,7 +33,7 @@ export default function BottomTabBar() {
                         >
                             <div className="relative">
                                 <Icon size={22} />
-                                {href === '/cart' && cartCount > 0 && (
+                                {href === '/cart' && mounted && cartCount > 0 && (
                                     <span className="absolute -top-1 -right-2 bg-[var(--primary)] text-white text-[9px] size-4 rounded-full flex items-center justify-center font-medium">
                                         {cartCount > 9 ? '9+' : cartCount}
                                     </span>

@@ -81,18 +81,23 @@ export default function AccountPage() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        let localOrders = []
+        try {
+            localOrders = JSON.parse(localStorage.getItem('harvii_orders') || '[]')
+        } catch {}
+
         if (token) {
             getAccountOrders(slug, token)
-                .then((data) => setOrders(data.orders || []))
-                .catch(() => {})
+                .then((data) => {
+                    const apiOrders = data.orders || []
+                    const apiRefs = new Set(apiOrders.map((o) => o.reference))
+                    const extra = localOrders.filter((o) => o.reference && !apiRefs.has(o.reference))
+                    setOrders([...apiOrders, ...extra])
+                })
+                .catch(() => setOrders(localOrders))
                 .finally(() => setLoading(false))
         } else {
-            try {
-                const stored = JSON.parse(localStorage.getItem('harvii_orders') || '[]')
-                setOrders(stored)
-            } catch {
-                setOrders([])
-            }
+            setOrders(localOrders)
             setLoading(false)
         }
     }, [token, slug])

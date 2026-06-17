@@ -1,53 +1,76 @@
 'use client'
-import { assets } from '@/assets/assets'
-import { ArrowRightIcon, ChevronRightIcon } from 'lucide-react'
 import Image from 'next/image'
-import React from 'react'
+import Link from 'next/link'
+import { ArrowRightIcon } from 'lucide-react'
+import { useStorefront } from '@/context/StorefrontContext'
 import CategoriesMarquee from './CategoriesMarquee'
 
 const Hero = () => {
+    const { config } = useStorefront()
 
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
+    const heroImageUrl = config?.hero_image_url
+    const tagline = config?.tagline || config?.store_name || 'Shop the best'
 
     return (
-        <div className='mx-6'>
-            <div className='flex max-xl:flex-col gap-8 max-w-7xl mx-auto my-10'>
-                <div className='relative flex-1 flex flex-col bg-green-200 rounded-3xl xl:min-h-100 group'>
-                    <div className='p-5 sm:p-16'>
-                        <div className='inline-flex items-center gap-3 bg-green-300 text-green-600 pr-4 p-1 rounded-full text-xs sm:text-sm'>
-                            <span className='bg-green-600 px-3 py-1 max-sm:ml-1 rounded-full text-white text-xs'>NEWS</span> Free Shipping on Orders Above $50! <ChevronRightIcon className='group-hover:ml-2 transition-all' size={16} />
-                        </div>
-                        <h2 className='text-3xl sm:text-5xl leading-[1.2] my-3 font-medium bg-gradient-to-r from-slate-600 to-[#A0FF74] bg-clip-text text-transparent max-w-xs  sm:max-w-md'>
-                            Gadgets you'll love. Prices you'll trust.
+        <div className="mx-6">
+            <div className="flex max-xl:flex-col gap-5 max-w-7xl mx-auto my-10">
+
+                {/* Main hero panel */}
+                <div className="relative flex-1 flex flex-col rounded-3xl xl:min-h-100 overflow-hidden group bg-slate-900">
+                    {heroImageUrl && (
+                        <Image
+                            src={heroImageUrl}
+                            alt="Hero"
+                            fill
+                            className="object-cover opacity-60"
+                            priority
+                        />
+                    )}
+                    <div className="relative z-10 p-6 sm:p-14 flex flex-col justify-end h-full min-h-72 sm:min-h-96">
+                        <p className="text-white/70 text-sm mb-2 uppercase tracking-widest">New Collection</p>
+                        <h2 className="text-3xl sm:text-5xl leading-[1.2] font-semibold text-white max-w-md">
+                            {tagline}
                         </h2>
-                        <div className='text-slate-800 text-sm font-medium mt-4 sm:mt-8'>
-                            <p>Starts from</p>
-                            <p className='text-3xl'>{currency}4.90</p>
-                        </div>
-                        <button className='bg-slate-800 text-white text-sm py-2.5 px-7 sm:py-5 sm:px-12 mt-4 sm:mt-10 rounded-md hover:bg-slate-900 hover:scale-103 active:scale-95 transition'>LEARN MORE</button>
+                        <Link
+                            href="/shop"
+                            className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-white bg-[var(--primary)] py-3 px-8 rounded-md hover:opacity-90 active:scale-95 transition w-fit"
+                        >
+                            Shop Now <ArrowRightIcon size={16} />
+                        </Link>
                     </div>
-                    <Image className='sm:absolute bottom-0 right-0 md:right-10 w-full sm:max-w-sm' src={assets.hero_model_img} alt="" />
                 </div>
-                <div className='flex flex-col md:flex-row xl:flex-col gap-5 w-full xl:max-w-sm text-sm text-slate-600'>
-                    <div className='flex-1 flex items-center justify-between w-full bg-orange-200 rounded-3xl p-6 px-8 group'>
+
+                {/* CTA cards */}
+                <div className="flex flex-row xl:flex-col gap-5 w-full xl:max-w-sm text-sm text-slate-600">
+                    <Link
+                        href="/shop"
+                        className="flex-1 flex items-center justify-between w-full rounded-3xl p-6 px-8 group bg-orange-100 min-h-32"
+                    >
                         <div>
-                            <p className='text-3xl font-medium bg-gradient-to-r from-slate-800 to-[#FFAD51] bg-clip-text text-transparent max-w-40'>Best products</p>
-                            <p className='flex items-center gap-1 mt-4'>View more <ArrowRightIcon className='group-hover:ml-2 transition-all' size={18} /> </p>
+                            <p className="text-xl font-medium text-slate-800 leading-snug">Browse Products</p>
+                            <p className="mt-2 text-slate-500 text-xs max-w-28">Explore our full catalogue</p>
+                            <p className="flex items-center gap-1 mt-4 text-slate-500 text-xs group-hover:gap-2 transition-all">
+                                Shop now <ArrowRightIcon size={14} />
+                            </p>
                         </div>
-                        <Image className='w-35' src={assets.hero_product_img1} alt="" />
-                    </div>
-                    <div className='flex-1 flex items-center justify-between w-full bg-blue-200 rounded-3xl p-6 px-8 group'>
+                    </Link>
+                    <Link
+                        href="/shop?featured=true"
+                        className="flex-1 flex items-center justify-between w-full rounded-3xl p-6 px-8 group bg-blue-100 min-h-32"
+                    >
                         <div>
-                            <p className='text-3xl font-medium bg-gradient-to-r from-slate-800 to-[#78B2FF] bg-clip-text text-transparent max-w-40'>20% discounts</p>
-                            <p className='flex items-center gap-1 mt-4'>View more <ArrowRightIcon className='group-hover:ml-2 transition-all' size={18} /> </p>
+                            <p className="text-xl font-medium text-slate-800 leading-snug">Most Popular</p>
+                            <p className="mt-2 text-slate-500 text-xs max-w-28">Our best-selling items</p>
+                            <p className="flex items-center gap-1 mt-4 text-slate-500 text-xs group-hover:gap-2 transition-all">
+                                View all <ArrowRightIcon size={14} />
+                            </p>
                         </div>
-                        <Image className='w-35' src={assets.hero_product_img2} alt="" />
-                    </div>
+                    </Link>
                 </div>
             </div>
+
             <CategoriesMarquee />
         </div>
-
     )
 }
 

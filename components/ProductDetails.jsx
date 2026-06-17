@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { ShoppingCart, Check } from 'lucide-react'
 import Counter from './Counter'
-import VariantPicker from './VariantPicker'
+import VariantPicker, { computePriceAdjustment } from './VariantPicker'
 import { addToCart } from '@/lib/features/cart/cartSlice'
 
 const PLACEHOLDER = 'https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png'
@@ -23,6 +23,10 @@ const ProductDetails = ({ product }) => {
     const [variants, setVariants] = useState({})
     const [added, setAdded] = useState(false)
 
+    const basePrice = Number(product.price)
+    const priceAdjustment = computePriceAdjustment(product.variant_metadata, variants)
+    const displayPrice = basePrice + priceAdjustment
+
     const inCart = useSelector((s) => !!s.cart.cartItems[product.product_id])
     const isOutOfStock = product.in_stock === false
 
@@ -35,7 +39,7 @@ const ProductDetails = ({ product }) => {
             product_id: product.product_id,
             quantity: 1,
             name: product.name,
-            price: Number(product.price),
+            price: displayPrice,
             currency: product.currency || 'NGN',
             image_url: product.image_url || product.images?.[0] || '',
             variants,
@@ -88,7 +92,12 @@ const ProductDetails = ({ product }) => {
                 )}
 
                 <p className="text-3xl font-semibold text-slate-800 mt-4">
-                    ₦{Number(product.price).toLocaleString()}
+                    ₦{displayPrice.toLocaleString()}
+                    {priceAdjustment !== 0 && (
+                        <span className="ml-2 text-base font-normal text-slate-400 line-through">
+                            ₦{basePrice.toLocaleString()}
+                        </span>
+                    )}
                 </p>
 
                 {/* Variant picker */}
