@@ -1,6 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+const HARVII_MARKETING_URL = process.env.NEXT_PUBLIC_HARVII_MARKETING_URL || 'https://harvii.co'
+
 export const metadata = { title: 'Coming Soon' }
 
 export default function ComingSoon({ searchParams }) {
@@ -32,7 +34,7 @@ export default function ComingSoon({ searchParams }) {
 
             <p className="mt-8 text-sm text-slate-400">
                 Powered by{' '}
-                <Link href="https://harvii.shop" className="underline hover:text-slate-600 transition">
+                <Link href={HARVII_MARKETING_URL} className="underline hover:text-slate-600 transition">
                     Harvii
                 </Link>
             </p>

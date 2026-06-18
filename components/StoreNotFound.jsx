@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+const HARVII_MARKETING_URL = process.env.NEXT_PUBLIC_HARVII_MARKETING_URL || 'https://harvii.co'
+
 const JOKES = [
     {
         emoji: '🕵️‍♂️',
@@ -83,7 +85,7 @@ export default function StoreNotFound({ slug = 'this-store' }) {
 
             <p className="mt-8 text-sm text-slate-400">
                 Powered by{' '}
-                <Link href="https://harvii.shop" className="underline hover:text-slate-600 transition">
+                <Link href={HARVII_MARKETING_URL} className="underline hover:text-slate-600 transition">
                     Harvii
                 </Link>
             </p>
