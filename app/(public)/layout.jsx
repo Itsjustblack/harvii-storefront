@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { getStorefrontConfig } from '@/lib/api'
 import Banner from '@/components/Banner'
@@ -22,8 +22,11 @@ export default async function StorefrontLayout({ children }) {
     let config = null
     try {
         config = await getStorefrontConfig(slug)
-    } catch {
-        // proceed with null config
+    } catch (err) {
+        if (err?.status === 404) {
+            notFound()
+        }
+        // Other errors (network, 5xx) — proceed with null config rather than taking the whole site down
     }
 
     if (config && !config.is_published) {
