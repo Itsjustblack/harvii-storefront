@@ -11,9 +11,11 @@ function useCountdown(expiresAt) {
         const tick = () => {
             const diff = new Date(expiresAt) - new Date()
             if (diff <= 0) { setTimeLeft('Expired'); return }
-            const m = Math.floor(diff / 60000)
+            const h = Math.floor(diff / 3600000)
+            const m = Math.floor((diff % 3600000) / 60000)
             const s = Math.floor((diff % 60000) / 1000)
-            setTimeLeft(`${m}m ${s.toString().padStart(2, '0')}s`)
+            const ss = s.toString().padStart(2, '0')
+            setTimeLeft(h > 0 ? `${h}h ${m}m ${ss}s` : `${m}m ${ss}s`)
         }
         tick()
         const id = setInterval(tick, 1000)

@@ -1,8 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector, useDispatch } from 'react-redux'
 import toast from 'react-hot-toast'
+import { CheckCircle2 } from 'lucide-react'
 import CheckoutProgress from '@/components/CheckoutProgress'
 import PaymentInstructions from '@/components/PaymentInstructions'
 import { useStorefront } from '@/context/StorefrontContext'
@@ -24,6 +25,7 @@ import {
     applyPromo,
     removePromo,
     confirmCheckout,
+    getCheckoutStatus,
 } from '@/lib/api'
 
 const NIGERIAN_STATES = [
@@ -285,12 +287,56 @@ function StepReview({ onNext, onBack }) {
 function StepPayment() {
     const router = useRouter()
     const dispatch = useDispatch()
+    const { slug } = useStorefront()
     const { token, payment, expiresAt, delivery, promo } = useSelector((s) => s.checkout)
     const total = promo?.new_total ?? delivery.total
+    const [confirmed, setConfirmed] = useState(false)
+
+    useEffect(() => {
+        if (!slug || !token) return
+        let cancelled = false
+
+        const poll = async () => {
+            try {
+                const data = await getCheckoutStatus(slug, token)
+                if (cancelled) return
+                if (data.status === 'paid' || data.status === 'completed') {
+                    setConfirmed(true)
+                    setTimeout(() => {
+                        if (!cancelled) {
+                            dispatch(clearCart())
+                            router.push(`/checkout/${token}`)
+                        }
+                    }, 2000)
+                    return
+                }
+                if (!['failed', 'expired', 'cancelled'].includes(data.status)) {
+                    setTimeout(poll, 10000)
+                }
+            } catch {}
+        }
+
+        const id = setTimeout(poll, 10000)
+        return () => { cancelled = true; clearTimeout(id) }
+    }, [slug, token, dispatch, router])
 
     const handleSent = () => {
         dispatch(clearCart())
         router.push(`/checkout/${token}`)
+    }
+
+    if (confirmed) {
+        return (
+            <div className="max-w-md mx-auto flex flex-col items-center justify-center py-20 gap-5 text-center">
+                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                    <CheckCircle2 size={32} className="text-green-500" />
+                </div>
+                <div>
+                    <h2 className="text-xl font-semibold text-slate-800">Payment Confirmed!</h2>
+                    <p className="text-sm text-slate-400 mt-1">Redirecting to your order…</p>
+                </div>
+            </div>
+        )
     }
 
     return (
