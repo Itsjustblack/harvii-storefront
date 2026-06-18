@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 
-export default function CartSummary({ subtotal, itemCount }) {
+export default function CartSummary({ subtotal, itemCount, disableCheckout = false }) {
     return (
         <div className="w-full lg:w-80 shrink-0 bg-slate-50 rounded-2xl p-6 h-fit">
             <h2 className="text-lg font-semibold text-slate-800 mb-5">Order Summary</h2>
@@ -24,12 +24,27 @@ export default function CartSummary({ subtotal, itemCount }) {
                 <span>₦{Number(subtotal).toLocaleString()}</span>
             </div>
 
-            <Link
-                href="/checkout"
-                className="w-full mt-6 block text-center bg-[var(--primary)] text-white py-3.5 rounded-xl text-sm font-medium hover:opacity-90 active:scale-95 transition"
-            >
-                Proceed to Checkout →
-            </Link>
+            {disableCheckout ? (
+                <>
+                    <button
+                        type="button"
+                        disabled
+                        className="w-full mt-6 block text-center bg-slate-200 text-slate-400 py-3.5 rounded-xl text-sm font-medium cursor-not-allowed"
+                    >
+                        Proceed to Checkout →
+                    </button>
+                    <p className="text-xs text-amber-600 text-center mt-2">
+                        Choose the missing options above before checking out.
+                    </p>
+                </>
+            ) : (
+                <Link
+                    href="/checkout"
+                    className="w-full mt-6 block text-center bg-[var(--primary)] text-white py-3.5 rounded-xl text-sm font-medium hover:opacity-90 active:scale-95 transition"
+                >
+                    Proceed to Checkout →
+                </Link>
+            )}
 
             <Link
                 href="/shop"

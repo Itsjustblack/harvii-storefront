@@ -1,11 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { X, Minus, Plus, ShoppingCart } from 'lucide-react'
+import { X, Minus, Plus, ShoppingCart, AlertCircle } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import toast from 'react-hot-toast'
 import { addToCart } from '@/lib/features/cart/cartSlice'
-import VariantPicker, { computePriceAdjustment } from './VariantPicker'
+import VariantPicker, { computePriceAdjustment, getMissingRequiredGroups } from './VariantPicker'
 
 const PLACEHOLDER = 'https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png'
 
@@ -36,21 +36,29 @@ export default function QuickAddSheet({ product, isOpen, onClose }) {
     if (!product) return null
 
     const imageUrl = product.image_url || product.images?.[0] || PLACEHOLDER
-    const adjustment = computePriceAdjustment(product.variant_metadata, variants)
+    const variantGroups = product.variant_metadata?.variant_groups
+    const adjustment = computePriceAdjustment(variantGroups, variants)
     const unitPrice = Number(product.price) + adjustment
-    const hasVariants = product.variant_metadata && Object.keys(product.variant_metadata).length > 0
+    const hasVariants = variantGroups && variantGroups.length > 0
+    const missingRequired = getMissingRequiredGroups(variantGroups, variants)
 
     const handleAdd = () => {
         dispatch(addToCart({
             product_id: product.product_id,
             name: product.name,
             price: unitPrice,
+            base_price: Number(product.price),
             currency: product.currency,
             image_url: imageUrl,
             quantity: qty,
             variants,
+            variant_metadata: product.variant_metadata || null,
         }))
-        toast.success(`Added to cart`)
+        toast.success(
+            missingRequired.length > 0
+                ? `Added to cart — choose ${missingRequired.map((g) => g.name).join(', ')} in your cart`
+                : 'Added to cart'
+        )
         onClose()
     }
 
@@ -130,10 +138,17 @@ export default function QuickAddSheet({ product, isOpen, onClose }) {
                     {/* Variants */}
                     {hasVariants && (
                         <VariantPicker
-                            variantMetadata={product.variant_metadata}
+                            variantGroups={variantGroups}
                             value={variants}
                             onChange={setVariants}
                         />
+                    )}
+
+                    {missingRequired.length > 0 && (
+                        <div className="flex items-start gap-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2.5 mb-1">
+                            <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                            <span>You can choose {missingRequired.map((g) => g.name).join(', ')} from your cart.</span>
+                        </div>
                     )}
 
                     {/* Qty + Add */}

@@ -27,6 +27,7 @@ import {
     confirmCheckout,
     getCheckoutStatus,
 } from '@/lib/api'
+import { getMissingRequiredGroups, formatVariantSelections } from '@/components/VariantPicker'
 
 const NIGERIAN_STATES = [
     'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
@@ -70,8 +71,8 @@ function StepContact({ onNext }) {
         e.preventDefault()
         setLoading(true)
         try {
-            const cartArr = Object.entries(cartItems).map(([product_id, item]) => ({
-                product_id,
+            const cartArr = Object.values(cartItems).map((item) => ({
+                product_id: item.product_id,
                 quantity: item.quantity,
                 variants: item.variants || {},
             }))
@@ -147,7 +148,7 @@ function StepReview({ onNext, onBack }) {
     const [promoLoading, setPromoLoading] = useState(false)
     const [confirmLoading, setConfirmLoading] = useState(false)
 
-    const cartArr = Object.entries(cartItems).map(([product_id, item]) => ({ product_id, ...item }))
+    const cartArr = Object.entries(cartItems).map(([cartKey, item]) => ({ cartKey, ...item }))
     const currentTotal = promo?.new_total ?? delivery.total
 
     const handleApplyPromo = async () => {
@@ -200,13 +201,15 @@ function StepReview({ onNext, onBack }) {
 
             {/* Items */}
             <div className="bg-slate-50 rounded-2xl overflow-hidden mb-6">
-                {cartArr.map((item) => (
-                    <div key={item.product_id} className="flex items-center gap-4 px-5 py-4 border-b border-slate-100 last:border-0">
+                {cartArr.map((item) => {
+                    const selections = formatVariantSelections(item.variant_metadata?.variant_groups, item.variants)
+                    return (
+                    <div key={item.cartKey} className="flex items-center gap-4 px-5 py-4 border-b border-slate-100 last:border-0">
                         <div className="text-sm text-slate-800 flex-1">
                             <p className="font-medium">{item.name}</p>
-                            {item.variants && Object.keys(item.variants).length > 0 && (
+                            {selections.length > 0 && (
                                 <p className="text-xs text-slate-400 mt-0.5">
-                                    {Object.entries(item.variants).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                                    {selections.map((s) => `${s.name}: ${s.display}`).join(', ')}
                                 </p>
                             )}
                         </div>
@@ -215,7 +218,8 @@ function StepReview({ onNext, onBack }) {
                             ₦{(item.price * item.quantity).toLocaleString()}
                         </p>
                     </div>
-                ))}
+                    )
+                })}
             </div>
 
             {/* Promo code */}
@@ -361,6 +365,22 @@ export default function CheckoutPage() {
                 <p className="text-xl">Your cart is empty</p>
                 <button onClick={() => router.push('/shop')} className="px-6 py-2 bg-[var(--primary)] text-white rounded-full text-sm hover:opacity-90 transition">
                     Go Shopping
+                </button>
+            </div>
+        )
+    }
+
+    const hasUnresolved = step === 1 && Object.values(cartItems).some(
+        (item) => getMissingRequiredGroups(item.variant_metadata?.variant_groups, item.variants).length > 0
+    )
+
+    if (hasUnresolved) {
+        return (
+            <div className="min-h-[70vh] flex flex-col items-center justify-center text-slate-400 gap-4 text-center px-6">
+                <p className="text-xl text-slate-500">A few items still need your input</p>
+                <p className="text-sm max-w-sm">Some products in your cart have options (like size or color) that haven't been chosen yet.</p>
+                <button onClick={() => router.push('/cart')} className="px-6 py-2 bg-[var(--primary)] text-white rounded-full text-sm hover:opacity-90 transition">
+                    Resolve in Cart
                 </button>
             </div>
         )

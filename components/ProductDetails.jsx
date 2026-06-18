@@ -3,10 +3,10 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, Check } from 'lucide-react'
+import { ShoppingCart, Check, AlertCircle } from 'lucide-react'
 import Counter from './Counter'
-import VariantPicker, { computePriceAdjustment } from './VariantPicker'
-import { addToCart } from '@/lib/features/cart/cartSlice'
+import VariantPicker, { computePriceAdjustment, getMinPriceAdjustment, getMissingRequiredGroups } from './VariantPicker'
+import { addToCart, buildCartKey } from '@/lib/features/cart/cartSlice'
 
 const PLACEHOLDER = 'https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png'
 
@@ -23,11 +23,15 @@ const ProductDetails = ({ product }) => {
     const [variants, setVariants] = useState({})
     const [added, setAdded] = useState(false)
 
+    const variantGroups = product.variant_metadata?.variant_groups
     const basePrice = Number(product.price)
-    const priceAdjustment = computePriceAdjustment(product.variant_metadata, variants)
+    const priceAdjustment = computePriceAdjustment(variantGroups, variants)
     const displayPrice = basePrice + priceAdjustment
+    const minAdjustment = getMinPriceAdjustment(variantGroups)
+    const missingRequired = getMissingRequiredGroups(variantGroups, variants)
 
-    const inCart = useSelector((s) => !!s.cart.cartItems[product.product_id])
+    const cartKey = buildCartKey(product.product_id, variants)
+    const inCart = useSelector((s) => !!s.cart.cartItems[cartKey])
     const isOutOfStock = product.in_stock === false
 
     const handleAddToCart = () => {
@@ -40,9 +44,11 @@ const ProductDetails = ({ product }) => {
             quantity: 1,
             name: product.name,
             price: displayPrice,
+            base_price: basePrice,
             currency: product.currency || 'NGN',
             image_url: product.image_url || product.images?.[0] || '',
             variants,
+            variant_metadata: product.variant_metadata || null,
         }))
         setAdded(true)
         setTimeout(() => setAdded(false), 2000)
@@ -91,22 +97,39 @@ const ProductDetails = ({ product }) => {
                     </span>
                 )}
 
-                <p className="text-3xl font-semibold text-slate-800 mt-4">
-                    ₦{displayPrice.toLocaleString()}
-                    {priceAdjustment !== 0 && (
-                        <span className="ml-2 text-base font-normal text-slate-400 line-through">
-                            ₦{basePrice.toLocaleString()}
-                        </span>
-                    )}
-                </p>
+                {missingRequired.length > 0 ? (
+                    <p className="text-3xl font-semibold text-slate-800 mt-4">
+                        <span className="text-slate-400 font-normal text-lg mr-1.5">From</span>
+                        ₦{(basePrice + minAdjustment).toLocaleString()}
+                    </p>
+                ) : (
+                    <p className="text-3xl font-semibold text-slate-800 mt-4">
+                        ₦{displayPrice.toLocaleString()}
+                        {priceAdjustment !== 0 && (
+                            <span className="ml-2 text-sm font-normal text-slate-400">
+                                (base ₦{basePrice.toLocaleString()})
+                            </span>
+                        )}
+                    </p>
+                )}
 
                 {/* Variant picker */}
-                {product.variant_metadata && Object.keys(product.variant_metadata).length > 0 && (
+                {variantGroups && variantGroups.length > 0 && (
                     <VariantPicker
-                        variantMetadata={product.variant_metadata}
+                        variantGroups={variantGroups}
                         value={variants}
                         onChange={setVariants}
                     />
+                )}
+
+                {missingRequired.length > 0 && (
+                    <div className="flex items-start gap-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2.5 mt-1 mb-2 max-w-md">
+                        <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                        <span>
+                            You can add this to your cart now and choose your{' '}
+                            {missingRequired.map((g) => g.name).join(', ')} from the cart page.
+                        </span>
+                    </div>
                 )}
 
                 {/* Quantity + Add to Cart */}
@@ -114,7 +137,7 @@ const ProductDetails = ({ product }) => {
                     {inCart && (
                         <div className="flex flex-col gap-1">
                             <p className="text-xs text-slate-500">Quantity</p>
-                            <Counter product_id={product.product_id} />
+                            <Counter cartKey={cartKey} />
                         </div>
                     )}
                     <button

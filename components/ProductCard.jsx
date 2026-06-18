@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingBag } from 'lucide-react'
 import QuickAddSheet from './QuickAddSheet'
+import { getMinPriceAdjustment } from './VariantPicker'
 
 const PLACEHOLDER = 'https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png'
 
@@ -11,6 +12,8 @@ const ProductCard = ({ product }) => {
     const [sheetOpen, setSheetOpen] = useState(false)
     const imageUrl = product.image_url || product.images?.[0] || PLACEHOLDER
     const isOutOfStock = product.in_stock === false
+    const minAdjustment = getMinPriceAdjustment(product.variant_metadata?.variant_groups)
+    const fromPrice = minAdjustment !== 0
 
     return (
         <div className="group max-xl:mx-auto flex flex-col">
@@ -52,7 +55,10 @@ const ProductCard = ({ product }) => {
                 >
                     <div className="flex justify-between gap-3 text-sm text-slate-800">
                         <p className="truncate max-w-40 font-medium">{product.name}</p>
-                        <p className="shrink-0 font-medium">₦{Number(product.price).toLocaleString()}</p>
+                        <p className="shrink-0 font-medium">
+                            {fromPrice && <span className="text-slate-400 font-normal mr-0.5">From</span>}
+                            ₦{(Number(product.price) + minAdjustment).toLocaleString()}
+                        </p>
                     </div>
                     {product.category && (
                         <p className="text-xs text-slate-400 mt-0.5">{product.category}</p>
