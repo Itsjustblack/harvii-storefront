@@ -14,7 +14,7 @@ import VariantPicker, {
 } from '@/components/VariantPicker'
 import { deleteItemFromCart, updateCartItemVariants } from '@/lib/features/cart/cartSlice'
 
-function CartRow({ cartKey, item }) {
+function useCartRowVariants(cartKey, item) {
     const dispatch = useDispatch()
     const variantGroups = item.variant_metadata?.variant_groups
     const missingRequired = getMissingRequiredGroups(variantGroups, item.variants)
@@ -26,62 +26,79 @@ function CartRow({ cartKey, item }) {
         dispatch(updateCartItemVariants({ cartKey, variants: newVariants, price }))
     }
 
+    return { variantGroups, missingRequired, editing, setEditing, selections, handleVariantChange }
+}
+
+function VariantOptionsBlock({ variantGroups, missingRequired, editing, setEditing, item, handleVariantChange }) {
+    if (!variantGroups || variantGroups.length === 0) return null
+    return (
+        <>
+            {missingRequired.length > 0 && !editing && (
+                <div className="flex items-center gap-1.5 text-xs text-amber-600 mt-1.5">
+                    <AlertCircle size={13} />
+                    <span>Needs {missingRequired.map((g) => g.name).join(', ')}</span>
+                </div>
+            )}
+            <button
+                type="button"
+                onClick={() => setEditing((v) => !v)}
+                className="text-xs text-[var(--primary)] hover:underline mt-1.5"
+            >
+                {editing ? 'Hide options' : missingRequired.length > 0 ? 'Choose options →' : 'Edit options'}
+            </button>
+            {editing && (
+                <div className="mt-2 max-w-sm bg-slate-50 rounded-xl p-4">
+                    <VariantPicker
+                        variantGroups={variantGroups}
+                        value={item.variants || {}}
+                        onChange={handleVariantChange}
+                        errors={missingRequired.map((g) => g.key)}
+                    />
+                </div>
+            )}
+        </>
+    )
+}
+
+function ProductThumb({ item }) {
+    return (
+        <div className="bg-slate-100 rounded-xl flex items-center justify-center size-16 shrink-0">
+            {item.image_url ? (
+                <Image
+                    src={item.image_url}
+                    alt={item.name}
+                    width={56}
+                    height={56}
+                    className="object-contain w-full h-full rounded-xl"
+                />
+            ) : (
+                <div className="text-slate-300 text-xs">img</div>
+            )}
+        </div>
+    )
+}
+
+// ─── Desktop: table row ─────────────────────────────────────────────────────
+function CartRowDesktop({ cartKey, item }) {
+    const dispatch = useDispatch()
+    const v = useCartRowVariants(cartKey, item)
+
     return (
         <tr className="border-b border-slate-50 align-top">
             <td className="py-5">
                 <div className="flex gap-4 items-start">
-                    <div className="bg-slate-100 rounded-xl flex items-center justify-center size-16 shrink-0">
-                        {item.image_url ? (
-                            <Image
-                                src={item.image_url}
-                                alt={item.name}
-                                width={56}
-                                height={56}
-                                className="object-contain w-full h-full rounded-xl"
-                            />
-                        ) : (
-                            <div className="text-slate-300 text-xs">img</div>
-                        )}
-                    </div>
+                    <ProductThumb item={item} />
                     <div className="flex-1 min-w-0">
                         <Link href={`/product/${item.product_id}`} className="font-medium text-slate-800 hover:underline line-clamp-2 max-w-48">
                             {item.name}
                         </Link>
                         <p className="text-slate-400 text-xs mt-0.5">₦{Number(item.price).toLocaleString()} each</p>
-
-                        {selections.length > 0 && (
+                        {v.selections.length > 0 && (
                             <p className="text-slate-400 text-xs mt-0.5">
-                                {selections.map((s) => `${s.name}: ${s.display}`).join(', ')}
+                                {v.selections.map((s) => `${s.name}: ${s.display}`).join(', ')}
                             </p>
                         )}
-
-                        {missingRequired.length > 0 && !editing && (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-600 mt-1.5">
-                                <AlertCircle size={13} />
-                                <span>Needs {missingRequired.map((g) => g.name).join(', ')}</span>
-                            </div>
-                        )}
-
-                        {variantGroups && variantGroups.length > 0 && (
-                            <button
-                                type="button"
-                                onClick={() => setEditing((v) => !v)}
-                                className="text-xs text-[var(--primary)] hover:underline mt-1.5"
-                            >
-                                {editing ? 'Hide options' : missingRequired.length > 0 ? 'Choose options →' : 'Edit options'}
-                            </button>
-                        )}
-
-                        {editing && variantGroups && variantGroups.length > 0 && (
-                            <div className="mt-2 max-w-sm bg-slate-50 rounded-xl p-4">
-                                <VariantPicker
-                                    variantGroups={variantGroups}
-                                    value={item.variants || {}}
-                                    onChange={handleVariantChange}
-                                    errors={missingRequired.map((g) => g.key)}
-                                />
-                            </div>
-                        )}
+                        <VariantOptionsBlock {...v} item={item} />
                     </div>
                 </div>
             </td>
@@ -93,7 +110,7 @@ function CartRow({ cartKey, item }) {
             <td className="py-5 text-center font-medium text-slate-800">
                 ₦{(item.price * item.quantity).toLocaleString()}
             </td>
-            <td className="py-5 text-center max-md:hidden">
+            <td className="py-5 text-center">
                 <button
                     onClick={() => dispatch(deleteItemFromCart({ cartKey }))}
                     className="text-red-400 hover:bg-red-50 p-2 rounded-full active:scale-95 transition"
@@ -102,6 +119,44 @@ function CartRow({ cartKey, item }) {
                 </button>
             </td>
         </tr>
+    )
+}
+
+// ─── Mobile: stacked card (table columns don't fit a phone width) ──────────
+function CartRowMobile({ cartKey, item }) {
+    const dispatch = useDispatch()
+    const v = useCartRowVariants(cartKey, item)
+
+    return (
+        <div className="flex flex-col gap-3 py-4 border-b border-slate-100">
+            <div className="flex gap-3 items-start">
+                <ProductThumb item={item} />
+                <div className="flex-1 min-w-0">
+                    <Link href={`/product/${item.product_id}`} className="font-medium text-slate-800 text-sm hover:underline line-clamp-2">
+                        {item.name}
+                    </Link>
+                    <p className="text-slate-400 text-xs mt-0.5">₦{Number(item.price).toLocaleString()} each</p>
+                    {v.selections.length > 0 && (
+                        <p className="text-slate-400 text-xs mt-0.5">
+                            {v.selections.map((s) => `${s.name}: ${s.display}`).join(', ')}
+                        </p>
+                    )}
+                </div>
+                <button
+                    onClick={() => dispatch(deleteItemFromCart({ cartKey }))}
+                    className="text-red-400 hover:bg-red-50 p-2 rounded-full active:scale-95 transition shrink-0"
+                >
+                    <Trash2Icon size={16} />
+                </button>
+            </div>
+
+            <VariantOptionsBlock {...v} item={item} />
+
+            <div className="flex items-center justify-between">
+                <Counter cartKey={cartKey} />
+                <p className="font-medium text-slate-800 text-sm">₦{(item.price * item.quantity).toLocaleString()}</p>
+            </div>
+        </div>
     )
 }
 
@@ -139,23 +194,30 @@ export default function Cart() {
                 </h1>
 
                 <div className="flex items-start justify-between gap-8 max-lg:flex-col">
-                    {/* Cart items table */}
-                    <div className="flex-1 overflow-x-auto">
-                        <table className="w-full text-slate-600 text-sm">
+                    <div className="flex-1 w-full overflow-x-auto">
+                        {/* Desktop table */}
+                        <table className="hidden sm:table w-full text-slate-600 text-sm">
                             <thead>
                                 <tr className="border-b border-slate-100">
                                     <th className="text-left pb-4 font-medium text-slate-500">Product</th>
                                     <th className="pb-4 font-medium text-slate-500">Quantity</th>
                                     <th className="pb-4 font-medium text-slate-500">Total</th>
-                                    <th className="pb-4 max-md:hidden" />
+                                    <th className="pb-4" />
                                 </tr>
                             </thead>
                             <tbody>
                                 {cartArray.map((item) => (
-                                    <CartRow key={item.cartKey} cartKey={item.cartKey} item={item} />
+                                    <CartRowDesktop key={item.cartKey} cartKey={item.cartKey} item={item} />
                                 ))}
                             </tbody>
                         </table>
+
+                        {/* Mobile stacked cards */}
+                        <div className="sm:hidden">
+                            {cartArray.map((item) => (
+                                <CartRowMobile key={item.cartKey} cartKey={item.cartKey} item={item} />
+                            ))}
+                        </div>
                     </div>
 
                     <CartSummary subtotal={subtotal} itemCount={total} disableCheckout={hasUnresolved} />

@@ -133,7 +133,7 @@ const ProductDetails = ({ product }) => {
                 )}
 
                 {/* Quantity + Add to Cart */}
-                <div className="flex items-end gap-4 mt-8">
+                <div className="flex flex-wrap items-end gap-4 mt-8">
                     {inCart && (
                         <div className="flex flex-col gap-1">
                             <p className="text-xs text-slate-500">Quantity</p>

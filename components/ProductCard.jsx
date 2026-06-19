@@ -53,7 +53,22 @@ const ProductCard = ({ product }) => {
                     className={isOutOfStock ? 'pointer-events-none' : ''}
                     tabIndex={isOutOfStock ? -1 : undefined}
                 >
-                    <div className="flex justify-between gap-3 text-sm text-slate-800">
+                    {/* Mobile: name gets the full card width (wraps up to 2 lines), price sits below */}
+                    <div className="sm:hidden">
+                        <p className="text-sm font-medium text-slate-800 leading-snug line-clamp-2">
+                            {product.name}
+                        </p>
+                        {product.category && (
+                            <p className="text-xs text-slate-400 mt-0.5">{product.category}</p>
+                        )}
+                        <p className="text-sm font-medium text-slate-800 mt-1">
+                            {fromPrice && <span className="text-slate-400 font-normal mr-0.5">From</span>}
+                            ₦{(Number(product.price) + minAdjustment).toLocaleString()}
+                        </p>
+                    </div>
+
+                    {/* Desktop: card is wide enough (sm:w-60) for name + price on one line */}
+                    <div className="hidden sm:flex justify-between gap-3 text-sm text-slate-800">
                         <p className="truncate min-w-0 flex-1 font-medium">{product.name}</p>
                         <p className="shrink-0 font-medium">
                             {fromPrice && <span className="text-slate-400 font-normal mr-0.5">From</span>}
@@ -61,7 +76,7 @@ const ProductCard = ({ product }) => {
                         </p>
                     </div>
                     {product.category && (
-                        <p className="text-xs text-slate-400 mt-0.5">{product.category}</p>
+                        <p className="hidden sm:block text-xs text-slate-400 mt-0.5">{product.category}</p>
                     )}
                 </Link>
 
