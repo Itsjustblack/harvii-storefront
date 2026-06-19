@@ -112,8 +112,10 @@ function FilterDrawer({ isOpen, onClose, availableTags, initialTags, initialMinP
             <div
                 role="dialog"
                 aria-modal="true"
-                className={`fixed inset-x-0 bottom-0 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md z-50 bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[85dvh] overflow-y-auto transition-transform duration-300 ease-out ${
-                    isOpen ? 'translate-y-0 sm:translate-x-[-50%]' : 'translate-y-full sm:translate-y-[-40%]'
+                className={`fixed inset-x-0 bottom-0 sm:bottom-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-md z-50 bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[85dvh] overflow-y-auto transition-all duration-300 ease-out ${
+                    isOpen
+                        ? 'translate-y-0 sm:scale-100 sm:opacity-100'
+                        : 'translate-y-full sm:scale-95 sm:opacity-0 sm:pointer-events-none'
                 }`}
             >
                 <div className="flex justify-center pt-3 pb-2 sticky top-0 bg-white z-10 sm:hidden">
