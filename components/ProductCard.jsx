@@ -54,7 +54,7 @@ const ProductCard = ({ product }) => {
                     tabIndex={isOutOfStock ? -1 : undefined}
                 >
                     <div className="flex justify-between gap-3 text-sm text-slate-800">
-                        <p className="truncate max-w-40 font-medium">{product.name}</p>
+                        <p className="truncate min-w-0 flex-1 font-medium">{product.name}</p>
                         <p className="shrink-0 font-medium">
                             {fromPrice && <span className="text-slate-400 font-normal mr-0.5">From</span>}
                             ₦{(Number(product.price) + minAdjustment).toLocaleString()}
