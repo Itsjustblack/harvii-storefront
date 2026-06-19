@@ -2,6 +2,7 @@ import { Outfit } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { headers } from 'next/headers'
 import StoreProvider from '@/app/StoreProvider'
+import QueryProvider from '@/app/QueryProvider'
 import { StorefrontProvider } from '@/context/StorefrontContext'
 import ThemeInjector from '@/components/ThemeInjector'
 import { getStorefrontConfig } from '@/lib/api'
@@ -45,13 +46,15 @@ export default async function RootLayout({ children }) {
     return (
         <html lang="en">
             <body className={`${outfit.className} antialiased`}>
-                <StoreProvider>
-                    <StorefrontProvider config={config} slug={slug}>
-                        <ThemeInjector primaryColor={config?.primary_color} />
-                        <Toaster position="top-center" />
-                        {children}
-                    </StorefrontProvider>
-                </StoreProvider>
+                <QueryProvider>
+                    <StoreProvider>
+                        <StorefrontProvider config={config} slug={slug}>
+                            <ThemeInjector primaryColor={config?.primary_color} />
+                            <Toaster position="top-center" />
+                            {children}
+                        </StorefrontProvider>
+                    </StoreProvider>
+                </QueryProvider>
             </body>
         </html>
     )
