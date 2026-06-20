@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ShoppingCart, Check, AlertCircle } from 'lucide-react'
 import Counter from './Counter'
 import VariantPicker, { computePriceAdjustment, getMinPriceAdjustment, getMissingRequiredGroups } from './VariantPicker'
+import BundleContents from './BundleContents'
 import { addToCart, buildCartKey } from '@/lib/features/cart/cartSlice'
 
 const PLACEHOLDER = 'https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png'
@@ -130,6 +131,14 @@ const ProductDetails = ({ product }) => {
                             {missingRequired.map((g) => g.name).join(', ')} from the cart page.
                         </span>
                     </div>
+                )}
+
+                {product.product_type === 'composite' && (
+                    <BundleContents
+                        components={product.composite_components}
+                        bundlePrice={basePrice}
+                        currency={product.currency}
+                    />
                 )}
 
                 {/* Quantity + Add to Cart */}
