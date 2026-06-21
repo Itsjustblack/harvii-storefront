@@ -32,9 +32,11 @@ const ProductCard = ({ product }) => {
 					alt={product.name}
 				/>
 				{product.category && (
-					<div className="absolute bottom-3 left-2 flex items-center gap-2 bg-white/80 backdrop-blur-sm font-medium px-2 py-0.5 rounded-full">
-						<div className="size-1.5 rounded-full bg-(--primary)"></div>
-						<p className="text-xs leading-4">{product.category}</p>
+					<div className="absolute top-4 left-4 flex items-center gap-1.75 bg-white/90 backdrop-blur-sm px-3.25 py-1.75 rounded-full">
+						<span className="size-1.5 rounded-full bg-primary"></span>
+						<span className="text-xs font-semibold text-[#5C5A66]">
+							{product.category}
+						</span>
 					</div>
 				)}
 				{isOutOfStock && (

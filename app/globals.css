@@ -1,29 +1,51 @@
 @import "tailwindcss";
 
 @theme inline {
-    --font-primary: var(--font-primary);
-    --font-secondary: var(--font-secondary);
+	--font-primary: var(--font-primary);
+	--font-secondary: var(--font-secondary);
+	--color-primary: var(--primary);
+	--color-primary-hover: var(--primary-hover);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary-tint: var(--primary-tint);
+	--color-primary-tint-border: var(--primary-tint-border);
+	--color-accent: var(--accent);
+	--color-accent-hover: var(--accent-hover);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-accent-tint: var(--accent-tint);
+	--color-accent-tint-border: var(--accent-tint-border);
 }
 
 :root {
-    --primary: #000000;
-    --primary-hover: color-mix(in srgb, var(--primary) 85%, black);
+	/* --primary: #000000; */
+	--primary-hover: color-mix(in srgb, var(--primary) 85%, black);
+	--primary-foreground: #ffffff;
+	--primary-tint: color-mix(in srgb, var(--primary) 8%, white);
+	--primary-tint-border: color-mix(in srgb, var(--primary) 18%, white);
+
+	/* Complementary hue, with lightness and chroma pinned (not inherited from primary) so
+	   the result stays a clear, intentional color and predictable to pair with white/black
+	   text, even when the primary itself is muted, near-gray, or very light/dark. */
+	--accent: oklch(from var(--primary) 0.45 0.1 calc(h + 150));
+	--accent-hover: oklch(from var(--primary) 0.37 0.11 calc(h + 150));
+	--accent-foreground: #ffffff;
+	--accent-tint: oklch(from var(--primary) 0.95 0.04 calc(h + 150));
+	--accent-tint-border: oklch(from var(--primary) 0.85 0.07 calc(h + 150));
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+	display: none;
 }
 .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
 }
 
 @layer base {
-    button {
-        cursor: pointer;
-    }
+	button {
+		cursor: pointer;
+	}
 }
 
 .no-scrollbar::-webkit-scrollbar {
-    display: none;
+	display: none;
 }
