@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-
-const HARVII_MARKETING_URL = process.env.NEXT_PUBLIC_HARVII_MARKETING_URL || 'https://harvii.co'
+import { HARVII_MARKETING_URL } from '@/lib/env'
 
 export const metadata = { title: 'Coming Soon' }
 

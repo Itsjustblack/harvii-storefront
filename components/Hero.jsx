@@ -1,77 +1,114 @@
-'use client'
-import Image from 'next/image'
-import Link from 'next/link'
-import { ArrowRightIcon } from 'lucide-react'
-import { useStorefront } from '@/context/StorefrontContext'
-import CategoriesMarquee from './CategoriesMarquee'
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRightIcon, LayoutGrid, Star } from "lucide-react";
+import { useStorefront } from "@/context/StorefrontContext";
+import CategoriesMarquee from "./CategoriesMarquee";
 
 const Hero = () => {
-    const { config } = useStorefront()
+	const { config } = useStorefront();
 
-    const heroImageUrl = config?.hero_image_url
-    const tagline = config?.tagline || config?.store_name || 'Shop the best'
+	const heroImageUrl = config?.hero_image_url;
+	const tagline = config?.tagline || config?.store_name || "Shop the best";
 
-    return (
-        <div className="mx-6">
-            <div className="flex max-xl:flex-col gap-5 max-w-7xl mx-auto my-10">
+	return (
+		<div className="mx-6">
+			<div className="flex max-xl:flex-col gap-5 max-w-7xl mx-auto my-10">
+				{/* Main hero panel */}
+				<div className="relative flex-1 flex flex-col justify-end min-h-96 sm:min-h-130 rounded-[26px] p-8 sm:p-14 sm:pb-13 overflow-hidden bg-[#15192B]">
+					{heroImageUrl && (
+						<Image
+							src={heroImageUrl}
+							alt="Hero"
+							fill
+							className="object-cover opacity-60"
+							priority
+						/>
+					)}
+					<div className="absolute -top-20 -right-15 w-75 h-75 rounded-full bg-[radial-gradient(circle,rgba(94,14,27,0.55),transparent_70%)]" />
+					<div className="absolute -bottom-30 left-[30%] w-90 h-90 rounded-full bg-[radial-gradient(circle,rgba(94,14,27,0.28),transparent_70%)]" />
 
-                {/* Main hero panel */}
-                <div className="relative flex-1 flex flex-col rounded-3xl xl:min-h-100 overflow-hidden group bg-slate-900">
-                    {heroImageUrl && (
-                        <Image
-                            src={heroImageUrl}
-                            alt="Hero"
-                            fill
-                            className="object-cover opacity-60"
-                            priority
-                        />
-                    )}
-                    <div className="relative z-10 p-6 sm:p-14 flex flex-col justify-end h-full min-h-72 sm:min-h-96">
-                        <p className="text-white/70 text-sm mb-2 uppercase tracking-widest">New Collection</p>
-                        <h2 className="text-3xl sm:text-5xl leading-[1.2] font-semibold text-white max-w-md">
-                            {tagline}
-                        </h2>
-                        <Link
-                            href="/shop"
-                            className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-white bg-[var(--primary)] py-3 px-8 rounded-md hover:opacity-90 active:scale-95 transition w-fit"
-                        >
-                            Shop Now <ArrowRightIcon size={16} />
-                        </Link>
-                    </div>
-                </div>
+					<span className="relative font-secondary font-semibold text-[13px] tracking-[0.32em] text-white/55 uppercase">
+						New Collection
+					</span>
+					<h1 className="relative font-primary font-extrabold text-4xl sm:text-6xl lg:text-[64px] leading-[1.05] sm:leading-[1.02] tracking-[-0.03em] text-white mt-4.5 mb-8.5 uppercase">
+						{tagline}
+					</h1>
+					<Link
+						href="/shop"
+						className="relative self-start inline-flex items-center gap-3 font-secondary font-semibold text-base text-white bg-[#5E0E1B] py-3.75 px-7.5 rounded-full hover:bg-white hover:text-[#15192B] active:scale-95 transition w-fit"
+					>
+						Shop Now{" "}
+						<ArrowRightIcon
+							size={18}
+							strokeWidth={2}
+						/>
+					</Link>
+				</div>
 
-                {/* CTA cards */}
-                <div className="flex flex-row xl:flex-col gap-5 w-full xl:max-w-sm text-sm text-slate-600">
-                    <Link
-                        href="/shop"
-                        className="flex-1 flex items-center justify-between w-full rounded-3xl p-6 px-8 group bg-orange-100 min-h-32"
-                    >
-                        <div>
-                            <p className="text-xl font-medium text-slate-800 leading-snug">Browse Products</p>
-                            <p className="mt-2 text-slate-500 text-xs max-w-28">Explore our full catalogue</p>
-                            <p className="flex items-center gap-1 mt-4 text-slate-500 text-xs group-hover:gap-2 transition-all">
-                                Shop now <ArrowRightIcon size={14} />
-                            </p>
-                        </div>
-                    </Link>
-                    <Link
-                        href="/shop?featured=true"
-                        className="flex-1 flex items-center justify-between w-full rounded-3xl p-6 px-8 group bg-blue-100 min-h-32"
-                    >
-                        <div>
-                            <p className="text-xl font-medium text-slate-800 leading-snug">Most Popular</p>
-                            <p className="mt-2 text-slate-500 text-xs max-w-28">Our best-selling items</p>
-                            <p className="flex items-center gap-1 mt-4 text-slate-500 text-xs group-hover:gap-2 transition-all">
-                                View all <ArrowRightIcon size={14} />
-                            </p>
-                        </div>
-                    </Link>
-                </div>
-            </div>
+				{/* CTA cards */}
+				<div className="flex flex-col gap-6 w-full xl:max-w-sm">
+					<Link
+						href="/shop"
+						className="relative flex-1 flex flex-col justify-between min-h-59 rounded-[26px] py-8.5 px-8 overflow-hidden bg-[#5E0E1B] hover:bg-[#4A0A14] transition"
+					>
+						<div className="absolute -top-10 -right-7.5 w-37.5 h-37.5 rounded-full bg-white/6" />
+						<div className="relative">
+							<div className="flex items-center justify-center w-11.5 h-11.5 rounded-[13px] bg-white/12 mb-5.5">
+								<LayoutGrid
+									size={22}
+									strokeWidth={1.8}
+									className="text-white"
+								/>
+							</div>
+							<h3 className="font-primary font-bold text-[23px] tracking-[-0.02em] text-white mb-[7px]">
+								Browse Products
+							</h3>
+							<p className="font-secondary text-[14.5px] leading-[1.5] text-white/65">
+								Explore our full catalogue
+							</p>
+						</div>
+						<span className="relative inline-flex items-center gap-2 mt-5 font-secondary font-semibold text-[14.5px] text-white">
+							Shop now{" "}
+							<ArrowRightIcon
+								size={16}
+								strokeWidth={2}
+							/>
+						</span>
+					</Link>
+					<Link
+						href="/shop?featured=true"
+						className="relative flex-1 flex flex-col justify-between min-h-59 rounded-[26px] py-8.5 px-8 overflow-hidden bg-[#F4ECE3] border border-[#EBE0D3] hover:border-[#5E0E1B] transition"
+					>
+						<div className="relative">
+							<div className="flex items-center justify-center w-11.5 h-11.5 rounded-[13px] bg-[#5E0E1B]/10 mb-5.5">
+								<Star
+									size={22}
+									strokeWidth={1.8}
+									className="text-[#5E0E1B]"
+								/>
+							</div>
+							<h3 className="font-primary font-bold text-[23px] tracking-[-0.02em] text-[#1A1D29] mb-[7px]">
+								Most Popular
+							</h3>
+							<p className="font-secondary text-[14.5px] leading-[1.5] text-[#8A8273]">
+								Our best-selling items
+							</p>
+						</div>
+						<span className="relative inline-flex items-center gap-2 mt-5 font-secondary font-semibold text-[14.5px] text-[#5E0E1B]">
+							View all{" "}
+							<ArrowRightIcon
+								size={16}
+								strokeWidth={2}
+							/>
+						</span>
+					</Link>
+				</div>
+			</div>
 
-            <CategoriesMarquee />
-        </div>
-    )
-}
+			{/* <CategoriesMarquee /> */}
+		</div>
+	);
+};
 
-export default Hero
+export default Hero;

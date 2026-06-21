@@ -16,23 +16,23 @@ const CategoriesMarquee = () => {
 
     if (categories.length === 0) return null
 
-    const repeated = [...categories, ...categories, ...categories, ...categories]
-
     return (
-        <div className="overflow-hidden w-full relative max-w-7xl mx-auto select-none group sm:my-16 my-8">
-            <div className="absolute left-0 top-0 h-full w-20 z-10 pointer-events-none bg-gradient-to-r from-white to-transparent" />
-            <div className="flex min-w-[200%] animate-[marqueeScroll_30s_linear_infinite] group-hover:[animation-play-state:paused] gap-3">
-                {repeated.map((cat, index) => (
-                    <Link
-                        key={index}
-                        href={`/shop?category=${encodeURIComponent(cat)}`}
-                        className="px-5 py-2 bg-slate-100 rounded-lg text-slate-500 text-xs sm:text-sm hover:bg-[var(--primary)] hover:text-white active:scale-95 transition-all duration-300 whitespace-nowrap"
-                    >
-                        {cat}
-                    </Link>
-                ))}
-            </div>
-            <div className="absolute right-0 top-0 h-full w-20 md:w-40 z-10 pointer-events-none bg-gradient-to-l from-white to-transparent" />
+        <div className="flex items-center gap-2.5 max-w-7xl mx-auto sm:my-16 my-8 overflow-x-auto no-scrollbar">
+            <Link
+                href="/shop"
+                className="flex items-center justify-center h-9.5 shrink-0 rounded-full px-5 text-[13px] font-semibold text-white bg-[var(--primary)]"
+            >
+                All
+            </Link>
+            {categories.map((cat) => (
+                <Link
+                    key={cat}
+                    href={`/shop?category=${encodeURIComponent(cat)}`}
+                    className="flex items-center justify-center h-9.5 shrink-0 rounded-full px-5 text-[13px] font-medium text-slate-700 bg-slate-100 hover:bg-[var(--primary)] hover:text-white active:scale-95 transition-all duration-300 whitespace-nowrap"
+                >
+                    {cat}
+                </Link>
+            ))}
         </div>
     )
 }

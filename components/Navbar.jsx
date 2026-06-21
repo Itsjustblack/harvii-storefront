@@ -62,7 +62,7 @@ const Navbar = () => {
                                 className="object-contain max-h-10"
                             />
                         ) : (
-                            <span className="text-2xl font-semibold text-slate-800">{storeName}</span>
+                            <span className="text-2xl font-semibold text-slate-800 font-primary">{storeName}</span>
                         )}
                     </Link>
 

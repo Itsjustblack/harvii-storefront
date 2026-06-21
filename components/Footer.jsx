@@ -1,140 +1,170 @@
-'use client'
-import Link from 'next/link'
-import Image from 'next/image'
-import { useStorefront } from '@/context/StorefrontContext'
+"use client";
+import Link from "next/link";
+import Image from "next/image";
+import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from "lucide-react";
+import { useStorefront } from "@/context/StorefrontContext";
+import { HARVII_MARKETING_URL } from "@/lib/env";
 
-const HARVII_MARKETING_URL = process.env.NEXT_PUBLIC_HARVII_MARKETING_URL || 'https://harvii.co'
+export default function Footer() {
+	const { config } = useStorefront();
+	const storeName = config?.store_name || "Harvii Store";
+	const logoUrl = config?.logo_url;
+	const tagline =
+		config?.tagline ||
+		"Serving the best, every single time. Fresh meals and everyday essentials, delivered.";
+	const social = config?.social_links || {};
+	const year = new Date().getFullYear();
 
-const MailIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14.6654 4.66699L8.67136 8.48499C8.46796 8.60313 8.23692 8.66536 8.0017 8.66536C7.76647 8.66536 7.53544 8.60313 7.33203 8.48499L1.33203 4.66699M2.66536 2.66699H13.332C14.0684 2.66699 14.6654 3.26395 14.6654 4.00033V12.0003C14.6654 12.7367 14.0684 13.3337 13.332 13.3337H2.66536C1.92898 13.3337 1.33203 12.7367 1.33203 12.0003V4.00033C1.33203 3.26395 1.92898 2.66699 2.66536 2.66699Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-)
-const PhoneIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M9.22003 11.045C9.35772 11.1082 9.51283 11.1227 9.65983 11.086C9.80682 11.0493 9.93692 10.9636 10.0287 10.843L10.2654 10.533C10.3896 10.3674 10.5506 10.233 10.7357 10.1404C10.9209 10.0479 11.125 9.99967 11.332 9.99967H13.332C13.6857 9.99967 14.0248 10.1402 14.2748 10.3902C14.5249 10.6402 14.6654 10.9794 14.6654 11.333V13.333C14.6654 13.6866 14.5249 14.0258 14.2748 14.2758C14.0248 14.5259 13.6857 14.6663 13.332 14.6663C10.1494 14.6663 7.09719 13.4021 4.84675 11.1516C2.59631 8.90119 1.33203 5.84894 1.33203 2.66634C1.33203 2.31272 1.47251 1.97358 1.72256 1.72353C1.9726 1.47348 2.31174 1.33301 2.66536 1.33301H4.66536C5.01899 1.33301 5.35812 1.47348 5.60817 1.72353C5.85822 1.97358 5.9987 2.31272 5.9987 2.66634V4.66634C5.9987 4.87333 5.9505 5.07749 5.85793 5.26263C5.76536 5.44777 5.63096 5.60881 5.46536 5.73301L5.15336 5.96701C5.03098 6.06046 4.94471 6.1934 4.90923 6.34324C4.87374 6.49308 4.89122 6.65059 4.9587 6.78901C5.86982 8.63959 7.36831 10.1362 9.22003 11.045Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-)
-const MapPinIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13.3346 6.66634C13.3346 9.99501 9.64197 13.4617 8.40197 14.5323C8.28645 14.6192 8.14583 14.6662 8.0013 14.6662C7.85677 14.6662 7.71615 14.6192 7.60064 14.5323C6.36064 13.4617 2.66797 9.99501 2.66797 6.66634C2.66797 5.25185 3.22987 3.8953 4.23007 2.89511C5.23026 1.89491 6.58681 1.33301 8.0013 1.33301C9.41579 1.33301 10.7723 1.89491 11.7725 2.89511C12.7727 3.8953 13.3346 5.25185 13.3346 6.66634Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M8.0013 8.66634C9.10587 8.66634 10.0013 7.77091 10.0013 6.66634C10.0013 5.56177 9.10587 4.66634 8.0013 4.66634C6.89673 4.66634 6.0013 5.56177 6.0013 6.66634C6.0013 7.77091 6.89673 8.66634 8.0013 8.66634Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-)
+	const wordmark = storeName.endsWith(".")
+		? storeName.slice(0, -1)
+		: storeName;
+	const wordmarkAccent = storeName.endsWith(".") ? "." : "";
 
-function FacebookIcon() {
-    return (
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14.9987 1.66699H12.4987C11.3936 1.66699 10.3338 2.10598 9.55242 2.88738C8.77102 3.66878 8.33203 4.72859 8.33203 5.83366V8.33366H5.83203V11.667H8.33203V18.3337H11.6654V11.667H14.1654L14.9987 8.33366H11.6654V5.83366C11.6654 5.61265 11.7532 5.40068 11.9094 5.2444C12.0657 5.08812 12.2777 5.00033 12.4987 5.00033H14.9987V1.66699Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    )
+	const socialLinks = [
+		social.facebook && { href: social.facebook, Icon: Facebook },
+		social.instagram && { href: social.instagram, Icon: Instagram },
+		social.twitter && { href: social.twitter, Icon: Twitter },
+	].filter(Boolean);
+
+	const contactLinks = [
+		config?.contact_email && {
+			text: config.contact_email,
+			href: `mailto:${config.contact_email}`,
+			Icon: Mail,
+		},
+		config?.contact_phone && {
+			text: config.contact_phone,
+			href: `tel:${config.contact_phone.replace(/\s+/g, "")}`,
+			Icon: Phone,
+		},
+		config?.contact_address && {
+			text: config.contact_address,
+			Icon: MapPin,
+		},
+	].filter(Boolean);
+
+	const navLinks = [
+		{ text: "Home", path: "/" },
+		{ text: "Shop", path: "/shop" },
+		{ text: "Track Order", path: "/track" },
+		contactLinks.length > 0 && { text: "Contact", path: "/contact" },
+	].filter(Boolean);
+
+	return (
+		<footer className="mt-10">
+			<div className="max-w-330 mx-auto px-6 sm:px-10 pt-16 pb-7.5">
+				<div className="grid grid-cols-1 sm:grid-cols-[1.6fr_1fr_1.2fr] gap-10 pb-12 border-b border-slate-200">
+					<div>
+						{logoUrl ? (
+							<Image
+								src={logoUrl}
+								alt={storeName}
+								width={120}
+								height={40}
+								className="object-contain max-h-10"
+							/>
+						) : (
+							<p className="font-primary font-extrabold text-[28px] tracking-[-0.04em] text-(--primary)">
+								{wordmark}
+								<span className="text-(--primary)">{wordmarkAccent}</span>
+							</p>
+						)}
+						<p className="font-secondary text-[15px] leading-[1.65] text-slate-500 mt-4 mb-6 max-w-[34ch]">
+							{tagline}
+						</p>
+						{socialLinks.length > 0 && (
+							<div className="flex items-center gap-3">
+								{socialLinks.map(({ href, Icon }, i) => (
+									<a
+										key={i}
+										href={href}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex items-center justify-center w-10.5 h-10.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition text-slate-500"
+									>
+										<Icon size={20} strokeWidth={1.8} />
+									</a>
+								))}
+							</div>
+						)}
+					</div>
+
+					<div>
+						<h4 className="font-secondary font-bold text-[13px] tracking-[0.14em] uppercase text-slate-500 mb-5">
+							Explore
+						</h4>
+						<div className="flex flex-col gap-3.5">
+							{navLinks.map((link, i) => (
+								<Link
+									key={i}
+									href={link.path}
+									className="font-secondary text-[15px] text-slate-600 hover:text-slate-900 transition"
+								>
+									{link.text}
+								</Link>
+							))}
+						</div>
+					</div>
+
+					{contactLinks.length > 0 && (
+						<div>
+							<h4 className="font-secondary font-bold text-[13px] tracking-[0.14em] uppercase text-slate-500 mb-5">
+								Contact
+							</h4>
+							<div className="flex flex-col gap-3.5">
+								{contactLinks.map(({ text, href, Icon }, i) =>
+									href ? (
+										<a
+											key={i}
+											href={href}
+											className="flex items-center gap-3 font-secondary text-[15px] text-slate-600 hover:text-slate-900 transition"
+										>
+											<Icon size={18} strokeWidth={1.7} className="text-slate-400 shrink-0" />
+											{text}
+										</a>
+									) : (
+										<div
+											key={i}
+											className="flex items-center gap-3 font-secondary text-[15px] text-slate-600"
+										>
+											<Icon size={18} strokeWidth={1.7} className="text-slate-400 shrink-0" />
+											{text}
+										</div>
+									)
+								)}
+							</div>
+						</div>
+					)}
+				</div>
+
+				<div className="flex items-center justify-between gap-4 flex-wrap pt-6">
+					<span className="font-secondary text-[13.5px] text-slate-400">
+						© {year} {storeName}. Powered by{" "}
+						<a
+							href={HARVII_MARKETING_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-slate-500 hover:text-slate-700 transition"
+						>
+							Harvii
+						</a>
+					</span>
+					<div className="flex gap-6">
+						<Link
+							href="/privacy"
+							className="font-secondary text-[13.5px] text-slate-400 hover:text-slate-700 transition"
+						>
+							Privacy
+						</Link>
+						<Link
+							href="/terms"
+							className="font-secondary text-[13.5px] text-slate-400 hover:text-slate-700 transition"
+						>
+							Terms
+						</Link>
+					</div>
+				</div>
+			</div>
+		</footer>
+	);
 }
-function InstagramIcon() {
-    return (
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14.5846 5.41699H14.593M5.83464 1.66699H14.168C16.4692 1.66699 18.3346 3.53247 18.3346 5.83366V14.167C18.3346 16.4682 16.4692 18.3337 14.168 18.3337H5.83464C3.53345 18.3337 1.66797 16.4682 1.66797 14.167V5.83366C1.66797 3.53247 3.53345 1.66699 5.83464 1.66699ZM13.3346 9.47533C13.4375 10.1689 13.319 10.8772 12.9961 11.4995C12.6732 12.1218 12.1623 12.6265 11.536 12.9417C10.9097 13.2569 10.2 13.3667 9.50779 13.2553C8.81557 13.1439 8.1761 12.8171 7.68033 12.3213C7.18457 11.8255 6.85775 11.1861 6.74636 10.4938C6.63497 9.80162 6.74469 9.0919 7.05991 8.46564C7.37512 7.83937 7.87979 7.32844 8.50212 7.00553C9.12445 6.68261 9.83276 6.56415 10.5263 6.66699C11.2337 6.7719 11.8887 7.10154 12.3944 7.60725C12.9001 8.11295 13.2297 8.76789 13.3346 9.47533Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    )
-}
-function TwitterIcon() {
-    return (
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18.3346 3.33368C18.3346 3.33368 17.7513 5.08368 16.668 6.16701C18.0013 14.5003 8.83464 20.5837 1.66797 15.8337C3.5013 15.917 5.33464 15.3337 6.66797 14.167C2.5013 12.917 0.417969 8.00034 2.5013 4.16701C4.33464 6.33368 7.16797 7.58368 10.0013 7.50034C9.2513 4.00034 13.3346 2.00034 15.8346 4.33368C16.7513 4.33368 18.3346 3.33368 18.3346 3.33368Z" stroke="#90A1B9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    )
-}
-
-const Footer = () => {
-    const { config } = useStorefront()
-    const storeName = config?.store_name || 'Harvii Store'
-    const logoUrl = config?.logo_url
-    const tagline = config?.tagline || ''
-    const social = config?.social_links || {}
-    const year = new Date().getFullYear()
-
-    const socialLinks = [
-        social.facebook && { href: social.facebook, Icon: FacebookIcon },
-        social.instagram && { href: social.instagram, Icon: InstagramIcon },
-        social.twitter && { href: social.twitter, Icon: TwitterIcon },
-    ].filter(Boolean)
-
-    const contactLinks = [
-        config?.contact_email && { text: config.contact_email, Icon: MailIcon },
-        config?.contact_phone && { text: config.contact_phone, Icon: PhoneIcon },
-        config?.contact_address && { text: config.contact_address, Icon: MapPinIcon },
-    ].filter(Boolean)
-
-    const navLinks = [
-        { text: 'Home', path: '/' },
-        { text: 'Shop', path: '/shop' },
-        { text: 'Track Order', path: '/track' },
-        contactLinks.length > 0 && { text: 'Contact', path: '/contact' },
-    ].filter(Boolean)
-
-    return (
-        <footer className="mx-6 bg-white">
-            <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row items-start justify-between gap-10 py-10 border-b border-slate-500/20 text-slate-500">
-                    <div className="max-w-xs">
-                        {logoUrl ? (
-                            <Image src={logoUrl} alt={storeName} width={120} height={40} className="object-contain max-h-10 mb-4" />
-                        ) : (
-                            <p className="text-xl font-semibold text-slate-800 mb-4">{storeName}</p>
-                        )}
-                        {tagline && <p className="text-sm leading-relaxed">{tagline}</p>}
-                        {socialLinks.length > 0 && (
-                            <div className="flex items-center gap-3 mt-5">
-                                {socialLinks.map(({ href, Icon }, i) => (
-                                    <a
-                                        key={i}
-                                        href={href}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center w-9 h-9 bg-slate-100 hover:scale-105 hover:border border-slate-300 transition rounded-full"
-                                    >
-                                        <Icon />
-                                    </a>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-10 text-sm">
-                        <div>
-                            <h3 className="font-medium text-slate-700 mb-4">NAVIGATE</h3>
-                            <ul className="space-y-2.5">
-                                {navLinks.map((link, i) => (
-                                    <li key={i}>
-                                        <Link href={link.path} className="hover:underline transition">{link.text}</Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {contactLinks.length > 0 && (
-                            <div>
-                                <h3 className="font-medium text-slate-700 mb-4">CONTACT</h3>
-                                <ul className="space-y-2.5">
-                                    {contactLinks.map(({ text, Icon }, i) => (
-                                        <li key={i} className="flex items-center gap-2">
-                                            <Icon />
-                                            <span>{text}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
-                </div>
-                <p className="py-4 text-sm text-slate-400">
-                    © {year} {storeName}. Powered by{' '}
-                    <a href={HARVII_MARKETING_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 transition">
-                        Harvii
-                    </a>
-                </p>
-            </div>
-        </footer>
-    )
-}
-
-export default Footer

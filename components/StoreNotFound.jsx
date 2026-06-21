@@ -1,8 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-
-const HARVII_MARKETING_URL = process.env.NEXT_PUBLIC_HARVII_MARKETING_URL || 'https://harvii.co'
+import { HARVII_MARKETING_URL } from '@/lib/env'
 
 const JOKES = [
     {

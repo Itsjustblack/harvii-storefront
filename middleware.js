@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { HARVII_DOMAIN, DEV_SLUG } from '@/lib/env'
 
 export function middleware(request) {
     const { pathname } = request.nextUrl
@@ -14,12 +15,11 @@ export function middleware(request) {
     }
 
     // Extract slug from subdomain: {slug}.harvii.shop
-    // In dev, fall back to NEXT_PUBLIC_DEV_SLUG
-    const harviDomain = process.env.NEXT_PUBLIC_HARVII_DOMAIN || 'harvii.shop'
-    let slug = process.env.NEXT_PUBLIC_DEV_SLUG || 'demo'
+    // In dev, fall back to DEV_SLUG
+    let slug = DEV_SLUG
 
-    if (host.endsWith(`.${harviDomain}`)) {
-        slug = host.replace(`.${harviDomain}`, '').split('.')[0]
+    if (host.endsWith(`.${HARVII_DOMAIN}`)) {
+        slug = host.replace(`.${HARVII_DOMAIN}`, '').split('.')[0]
     }
 
     const response = NextResponse.next()

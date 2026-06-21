@@ -1,4 +1,5 @@
 import { headers } from 'next/headers'
+import { DEV_SLUG } from '@/lib/env'
 import StoreNotFound from '@/components/StoreNotFound'
 
 export const metadata = { title: 'Store Not Found' }
@@ -6,9 +7,9 @@ export const metadata = { title: 'Store Not Found' }
 async function getSlug() {
     try {
         const h = await headers()
-        return h.get('x-slug') || process.env.NEXT_PUBLIC_DEV_SLUG || 'demo'
+        return h.get('x-slug') || DEV_SLUG
     } catch {
-        return process.env.NEXT_PUBLIC_DEV_SLUG || 'demo'
+        return DEV_SLUG
     }
 }
 

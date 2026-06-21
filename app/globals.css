@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme inline {
+    --font-primary: var(--font-primary);
+    --font-secondary: var(--font-secondary);
+}
+
 :root {
     --primary: #000000;
     --primary-hover: color-mix(in srgb, var(--primary) 85%, black);
@@ -11,17 +16,6 @@
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
-}
-
-@layer components {
-    @keyframes marqueeScroll {
-        0% {
-            transform: translateX(0%);
-        }
-        100% {
-            transform: translateX(-50%);
-        }
-    }
 }
 
 @layer base {
