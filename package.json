@@ -23,8 +23,5 @@
 	"devDependencies": {
 		"@tailwindcss/postcss": "^4",
 		"tailwindcss": "^4"
-	},
-	"optionalDependencies": {
-		"@tailwindcss/oxide-darwin-arm64": "^4.3.1"
 	}
 }

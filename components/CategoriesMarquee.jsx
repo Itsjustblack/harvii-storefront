@@ -1,18 +1,11 @@
 'use client'
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useStorefront } from '@/context/StorefrontContext'
-import { getCategories } from '@/lib/api'
+import { useCategories } from '@/lib/queries'
 
 const CategoriesMarquee = () => {
     const { slug } = useStorefront()
-    const [categories, setCategories] = useState([])
-
-    useEffect(() => {
-        getCategories(slug)
-            .then((data) => setCategories(data.categories || []))
-            .catch(() => {})
-    }, [slug])
+    const { data: categories = [] } = useCategories(slug)
 
     if (categories.length === 0) return null
 

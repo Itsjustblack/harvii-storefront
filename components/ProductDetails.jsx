@@ -10,6 +10,7 @@ import VariantPicker, {
 	getMinPriceAdjustment,
 	getMissingRequiredGroups,
 } from "./VariantPicker";
+import BundleContents from './BundleContents'
 import { addToCart, buildCartKey } from "@/lib/features/cart/cartSlice";
 
 const PLACEHOLDER =
@@ -178,8 +179,16 @@ const ProductDetails = ({ product }) => {
 					</div>
 				)}
 
+                {product.product_type === 'composite' && (
+                    <BundleContents
+                        components={product.composite_components}
+                        bundlePrice={basePrice}
+                        currency={product.currency}
+                    />
+                )}
+
 				{/* Quantity + Add to Cart */}
-				<div className="flex items-end gap-4 mt-8">
+				<div className="flex flex-wrap items-end gap-4 mt-8">
 					{inCart && (
 						<div className="flex flex-col gap-1">
 							<p className="text-xs text-slate-500">Quantity</p>

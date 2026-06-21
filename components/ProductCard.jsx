@@ -49,6 +49,11 @@ const ProductCard = ({ product }) => {
 						Featured
 					</span>
 				)}
+				{product.product_type === "composite" && !isOutOfStock && (
+					<span className="absolute top-2 right-2 bg-slate-800/90 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+						Bundle
+					</span>
+				)}
 				{/* {!isOutOfStock && (
 					<button
 						onClick={() => setSheetOpen(true)}
