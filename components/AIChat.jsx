@@ -11,16 +11,28 @@ const RECONNECT_BACKOFF_MS = [1000, 2000, 5000, 10000]
 
 function ChatBubble({ message }) {
     const isCustomer = message.sender === 'customer'
+    const hasImage = !!message.imageUrl
     return (
         <div className={`flex ${isCustomer ? 'justify-end' : 'justify-start'}`}>
             <div
-                className={`max-w-[80%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
+                className={`max-w-[80%] rounded-2xl text-sm leading-relaxed overflow-hidden ${
+                    hasImage && !message.text ? '' : 'px-3.5 py-2'
+                } ${
                     isCustomer
                         ? 'bg-[var(--primary)] text-white rounded-br-sm'
                         : 'bg-slate-100 text-slate-700 rounded-bl-sm'
                 }`}
             >
-                {message.text}
+                {hasImage && (
+                    <img
+                        src={message.imageUrl}
+                        alt=""
+                        className={`block max-w-full ${message.text ? 'rounded-t-xl' : 'rounded-2xl'}`}
+                    />
+                )}
+                {message.text && (
+                    <div className={hasImage ? 'px-3.5 py-2' : ''}>{message.text}</div>
+                )}
             </div>
         </div>
     )
@@ -125,13 +137,16 @@ export default function AIChat() {
                     }
                 }, PING_INTERVAL_MS)
                 if (msg.initial_response) {
-                    setMessages((prev) => [...prev, { sender: 'store', text: msg.initial_response.text }])
+                    setMessages((prev) => [
+                        ...prev,
+                        { sender: 'store', text: msg.initial_response.text, imageUrl: msg.initial_response.image_url },
+                    ])
                 }
                 return
             }
             if (msg.type === 'message') {
                 setSending(false)
-                setMessages((prev) => [...prev, { sender: 'store', text: msg.text }])
+                setMessages((prev) => [...prev, { sender: 'store', text: msg.text, imageUrl: msg.image_url }])
                 return
             }
             if (msg.type === 'pong') return
