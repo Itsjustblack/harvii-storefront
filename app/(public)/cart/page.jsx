@@ -7,33 +7,27 @@ import { Trash2Icon, AlertCircle } from 'lucide-react'
 import Counter from '@/components/Counter'
 import CartSummary from '@/components/CartSummary'
 import OthersAlsoBought from '@/components/OthersAlsoBought'
-import VariantPicker, {
+import CartOptionsSheet from '@/components/CartOptionsSheet'
+import {
     computePriceAdjustment,
     getMissingRequiredGroups,
     formatVariantSelections,
 } from '@/components/VariantPicker'
-import { deleteItemFromCart, updateCartItemVariants } from '@/lib/features/cart/cartSlice'
+import { deleteItemFromCart, updateCartItemVariants, buildCartKey } from '@/lib/features/cart/cartSlice'
 
-function useCartRowVariants(cartKey, item) {
-    const dispatch = useDispatch()
+function useCartRowVariants(item) {
     const variantGroups = item.variant_metadata?.variant_groups
     const missingRequired = getMissingRequiredGroups(variantGroups, item.variants)
-    const [editing, setEditing] = useState(missingRequired.length > 0)
     const selections = formatVariantSelections(variantGroups, item.variants)
 
-    const handleVariantChange = (newVariants) => {
-        const price = Number(item.base_price ?? item.price) + computePriceAdjustment(variantGroups, newVariants)
-        dispatch(updateCartItemVariants({ cartKey, variants: newVariants, price }))
-    }
-
-    return { variantGroups, missingRequired, editing, setEditing, selections, handleVariantChange }
+    return { variantGroups, missingRequired, selections }
 }
 
-function VariantOptionsBlock({ variantGroups, missingRequired, editing, setEditing, item, handleVariantChange }) {
+function VariantOptionsBlock({ variantGroups, missingRequired, item, isOpen, onOpen, onClose, onVariantChange }) {
     if (!variantGroups || variantGroups.length === 0) return null
     return (
         <>
-            {missingRequired.length > 0 && !editing && (
+            {missingRequired.length > 0 && (
                 <div className="flex items-center gap-1.5 text-xs text-amber-600 mt-1.5">
                     <AlertCircle size={13} />
                     <span>Needs {missingRequired.map((g) => g.name).join(', ')}</span>
@@ -41,21 +35,18 @@ function VariantOptionsBlock({ variantGroups, missingRequired, editing, setEditi
             )}
             <button
                 type="button"
-                onClick={() => setEditing((v) => !v)}
+                onClick={onOpen}
                 className="text-xs text-[var(--primary)] hover:underline mt-1.5"
             >
-                {editing ? 'Hide options' : missingRequired.length > 0 ? 'Choose options →' : 'Edit options'}
+                {missingRequired.length > 0 ? 'Choose options →' : 'Edit options'}
             </button>
-            {editing && (
-                <div className="mt-2 max-w-sm bg-slate-50 rounded-xl p-4">
-                    <VariantPicker
-                        variantGroups={variantGroups}
-                        value={item.variants || {}}
-                        onChange={handleVariantChange}
-                        errors={missingRequired.map((g) => g.key)}
-                    />
-                </div>
-            )}
+            <CartOptionsSheet
+                item={item}
+                variantGroups={variantGroups}
+                isOpen={isOpen}
+                onClose={onClose}
+                onChange={onVariantChange}
+            />
         </>
     )
 }
@@ -79,9 +70,9 @@ function ProductThumb({ item }) {
 }
 
 // ─── Desktop: table row ─────────────────────────────────────────────────────
-function CartRowDesktop({ cartKey, item }) {
+function CartRowDesktop({ cartKey, item, isEditing, onEdit, onCloseEdit, onVariantChange }) {
     const dispatch = useDispatch()
-    const v = useCartRowVariants(cartKey, item)
+    const v = useCartRowVariants(item)
 
     return (
         <tr className="border-b border-slate-50 align-top">
@@ -98,7 +89,7 @@ function CartRowDesktop({ cartKey, item }) {
                                 {v.selections.map((s) => `${s.name}: ${s.display}`).join(', ')}
                             </p>
                         )}
-                        <VariantOptionsBlock {...v} item={item} />
+                        <VariantOptionsBlock {...v} item={item} isOpen={isEditing} onOpen={onEdit} onClose={onCloseEdit} onVariantChange={onVariantChange} />
                     </div>
                 </div>
             </td>
@@ -123,9 +114,9 @@ function CartRowDesktop({ cartKey, item }) {
 }
 
 // ─── Mobile: stacked card (table columns don't fit a phone width) ──────────
-function CartRowMobile({ cartKey, item }) {
+function CartRowMobile({ cartKey, item, isEditing, onEdit, onCloseEdit, onVariantChange }) {
     const dispatch = useDispatch()
-    const v = useCartRowVariants(cartKey, item)
+    const v = useCartRowVariants(item)
 
     return (
         <div className="flex flex-col gap-3 py-4 border-b border-slate-100">
@@ -150,7 +141,7 @@ function CartRowMobile({ cartKey, item }) {
                 </button>
             </div>
 
-            <VariantOptionsBlock {...v} item={item} />
+            <VariantOptionsBlock {...v} item={item} isOpen={isEditing} onOpen={onEdit} onClose={onCloseEdit} onVariantChange={onVariantChange} />
 
             <div className="flex items-center justify-between">
                 <Counter cartKey={cartKey} />
@@ -161,13 +152,22 @@ function CartRowMobile({ cartKey, item }) {
 }
 
 export default function Cart() {
+    const dispatch = useDispatch()
     const { cartItems, total } = useSelector((s) => s.cart)
+    const [editingCartKey, setEditingCartKey] = useState(null)
 
     const cartArray = Object.entries(cartItems).map(([cartKey, item]) => ({
         cartKey,
         ...item,
         product_id: item.product_id || cartKey,
     }))
+
+    const handleVariantChange = (item, newVariants) => {
+        const variantGroups = item.variant_metadata?.variant_groups
+        const price = Number(item.base_price ?? item.price) + computePriceAdjustment(variantGroups, newVariants)
+        dispatch(updateCartItemVariants({ cartKey: item.cartKey, variants: newVariants, price }))
+        setEditingCartKey(buildCartKey(item.product_id, newVariants))
+    }
 
     const subtotal = cartArray.reduce((sum, item) => sum + item.price * item.quantity, 0)
     const hasUnresolved = cartArray.some(
@@ -207,7 +207,15 @@ export default function Cart() {
                             </thead>
                             <tbody>
                                 {cartArray.map((item) => (
-                                    <CartRowDesktop key={item.cartKey} cartKey={item.cartKey} item={item} />
+                                    <CartRowDesktop
+                                        key={item.cartKey}
+                                        cartKey={item.cartKey}
+                                        item={item}
+                                        isEditing={editingCartKey === item.cartKey}
+                                        onEdit={() => setEditingCartKey(item.cartKey)}
+                                        onCloseEdit={() => setEditingCartKey(null)}
+                                        onVariantChange={(newVariants) => handleVariantChange(item, newVariants)}
+                                    />
                                 ))}
                             </tbody>
                         </table>
@@ -215,7 +223,15 @@ export default function Cart() {
                         {/* Mobile stacked cards */}
                         <div className="sm:hidden">
                             {cartArray.map((item) => (
-                                <CartRowMobile key={item.cartKey} cartKey={item.cartKey} item={item} />
+                                <CartRowMobile
+                                    key={item.cartKey}
+                                    cartKey={item.cartKey}
+                                    item={item}
+                                    isEditing={editingCartKey === item.cartKey}
+                                    onEdit={() => setEditingCartKey(item.cartKey)}
+                                    onCloseEdit={() => setEditingCartKey(null)}
+                                    onVariantChange={(newVariants) => handleVariantChange(item, newVariants)}
+                                />
                             ))}
                         </div>
                     </div>

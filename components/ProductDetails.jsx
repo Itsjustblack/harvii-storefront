@@ -88,16 +88,20 @@ const ProductDetails = ({ product }) => {
 					</div>
 				)}
 
-				<div className="relative size-full bg-black/5 rounded-lg overflow-hidden flex items-center justify-center">
+				<div className="relative size-full bg-[#F4F5F6] rounded-lg overflow-hidden flex items-center justify-center">
 					{mainImage ? (
-						<Image
-							src={mainImage}
-							alt={product.name}
-							fill
-							className="relative object-cover p-10 lg:p-20"
-						/>
+						<div className="relative size-[80%]">
+							<Image
+								src={mainImage}
+								alt={product.name}
+								fill
+								className="object-cover"
+							/>
+						</div>
 					) : (
-						<div className="relative text-black/40 text-base">No image</div>
+						<div className="relative text-black/40 text-xl italic font-semibold">
+							Image not available
+						</div>
 					)}
 					{product.category && (
 						<div className="absolute top-4 left-4 flex items-center gap-1.75 bg-white/90 backdrop-blur-sm px-3.25 py-1.75 rounded-full">
@@ -115,7 +119,7 @@ const ProductDetails = ({ product }) => {
 				{/* <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">
 					{product.category}
 				</p> */}
-				<h1 className="font-primary font-bold text-4xl sm:text-5xl lg:text-[52px] leading-[1.02] tracking-[-0.035em] text-black mt-0.5 mb-3.5">
+				<h1 className="font-primary font-bold text-4xl sm:text-5xl lg:text-[50px] tracking-[-0.035em] text-black mb-3.5">
 					{product.name}
 				</h1>
 
