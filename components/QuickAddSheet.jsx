@@ -4,19 +4,21 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import { X, Minus, Plus, ShoppingCart, AlertCircle } from "lucide-react";
 import { useDispatch } from "react-redux";
-import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 import { addToCart } from "@/lib/features/cart/cartSlice";
 import VariantPicker, {
 	computePriceAdjustment,
 	getMissingRequiredGroups,
 } from "./VariantPicker";
 import { formatPrice } from '@/lib/money'
+import { notifyAddedToCart } from '@/lib/notifyAddedToCart'
 
 const PLACEHOLDER =
 	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
 
 export default function QuickAddSheet({ product, isOpen, onClose }) {
 	const dispatch = useDispatch();
+	const router = useRouter();
 	const [qty, setQty] = useState(1);
 	const [variants, setVariants] = useState({});
 
@@ -59,11 +61,15 @@ export default function QuickAddSheet({ product, isOpen, onClose }) {
 				variant_metadata: product.variant_metadata || null,
 			}),
 		);
-		toast.success(
-			missingRequired.length > 0
-				? `Added to cart — choose ${missingRequired.map((g) => g.name).join(", ")} in your cart`
-				: "Added to cart",
-		);
+		notifyAddedToCart({
+			name: product.name,
+			imageUrl,
+			quantity: qty,
+			note: missingRequired.length > 0
+				? `Choose ${missingRequired.map((g) => g.name).join(", ")} in your cart`
+				: undefined,
+			onViewCart: () => router.push("/cart"),
+		});
 		onClose();
 	};
 

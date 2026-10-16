@@ -87,9 +87,9 @@ export default function ProductPage() {
 
 				<ProductDetails product={product} />
 				{/* <ProductDescription product={product} /> */}
-			</div>
 
-			{/* <OthersAlsoBought productId={product.product_id} context="product" /> */}
+				<OthersAlsoBought productId={product.product_id} context="product" />
+			</div>
 		</div>
 	);
 }

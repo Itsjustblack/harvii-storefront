@@ -20,12 +20,14 @@ const FeaturedProducts = () => {
     if (loading || products.length === 0) return null
 
     return (
-        <div className="px-6 my-16 max-w-6xl mx-auto">
-            <Title title="Featured Products" description={`${products.length} handpicked items`} href="/shop" />
-            <div className="mt-12 grid grid-cols-2 sm:flex flex-wrap gap-6 xl:gap-12">
-                {products.slice(0, 8).map((product) => (
-                    <ProductCard key={product.product_id} product={product} />
-                ))}
+        <div className="my-16 mx-6">
+            <div className="max-w-7xl mx-auto">
+                <Title title="Featured Products" description={`${products.length} handpicked items`} href="/shop?featured=true" buttonLabel="See featured" />
+                <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+                    {products.slice(0, 8).map((product) => (
+                        <ProductCard key={product.product_id} product={product} />
+                    ))}
+                </div>
             </div>
         </div>
     )

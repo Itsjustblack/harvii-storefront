@@ -20,6 +20,14 @@ const primary = Sora({
 	variable: "--font-primary",
 });
 
+// viewportFit: "cover" is what makes env(safe-area-inset-*) work on notched
+// phones — the fixed bottom tab bar and sheets rely on it to clear the home indicator.
+export const viewport = {
+	width: "device-width",
+	initialScale: 1,
+	viewportFit: "cover",
+};
+
 export async function generateMetadata() {
 	const slug = await getSlug();
 	try {

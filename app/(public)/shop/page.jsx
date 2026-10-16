@@ -251,6 +251,7 @@ function ShopContent() {
 	const tags = searchParams.getAll("tags");
 	const minPrice = searchParams.get("min_price") || "";
 	const maxPrice = searchParams.get("max_price") || "";
+	const featured = searchParams.get("featured") === "true";
 
 	const fetchProducts = useCallback(
 		async (pageNum) => {
@@ -259,6 +260,7 @@ function ShopContent() {
 				const data = await getProducts(slug, {
 					q: q || undefined,
 					category: category || undefined,
+					featured: featured || undefined,
 					tags: tags.length > 0 ? tags : undefined,
 					minPrice: minPrice || undefined,
 					maxPrice: maxPrice || undefined,
@@ -274,7 +276,7 @@ function ShopContent() {
 			} catch {}
 			setLoading(false);
 		},
-		[slug, q, category, tags.join(","), minPrice, maxPrice],
+		[slug, q, category, featured, tags.join(","), minPrice, maxPrice],
 	);
 
 	useEffect(() => {
@@ -311,7 +313,7 @@ function ShopContent() {
 	};
 
 	const hasMore = products.length < total;
-	const hasAnyFilter = q || category || tags.length > 0 || minPrice || maxPrice;
+	const hasAnyFilter = q || category || featured || tags.length > 0 || minPrice || maxPrice;
 	const activeFilterCount =
 		tags.length + (minPrice ? 1 : 0) + (maxPrice ? 1 : 0);
 
@@ -321,11 +323,23 @@ function ShopContent() {
 				{/* Header */}
 				<div className="mb-8">
 					<h1 className="text-2xl font-semibold">
-						{category ? category : q ? `Results for "${q}"` : "All Products"}
+						{category ? category : q ? `Results for "${q}"` : featured ? "Most Popular" : "All Products"}
 					</h1>
 					{!loading && (
 						<p className="text-sm text-slate-400 mt-1">
 							{total} {total === 1 ? "product" : "products"}
+							{featured && (
+								<>
+									{" · "}
+									<button
+										type="button"
+										onClick={() => setFilter("featured", "")}
+										className="text-[var(--primary)] hover:underline"
+									>
+										Show all products
+									</button>
+								</>
+							)}
 						</p>
 					)}
 				</div>

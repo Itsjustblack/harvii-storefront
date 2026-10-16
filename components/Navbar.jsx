@@ -1,5 +1,5 @@
 'use client'
-import { Search, ShoppingCart, User, LogOut, Package } from 'lucide-react'
+import { Search, ShoppingCart, User, LogOut, Package, X } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -15,6 +15,7 @@ const Navbar = () => {
 
     const [search, setSearch] = useState('')
     const [menuOpen, setMenuOpen] = useState(false)
+    const [searchOpen, setSearchOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
     const menuRef = useRef(null)
 
@@ -25,7 +26,10 @@ const Navbar = () => {
 
     const handleSearch = (e) => {
         e.preventDefault()
-        if (search.trim()) router.push(`/shop?q=${encodeURIComponent(search.trim())}`)
+        if (search.trim()) {
+            router.push(`/shop?q=${encodeURIComponent(search.trim())}`)
+            setSearchOpen(false)
+        }
     }
 
     const handleLogout = () => {
@@ -47,12 +51,12 @@ const Navbar = () => {
     const logoUrl = config?.logo_url
 
     return (
-        <nav className="relative bg-white">
+        <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
             <div className="mx-6">
                 <div className="flex items-center justify-between max-w-7xl mx-auto py-4 transition-all">
 
                     {/* Brand / Logo */}
-                    <Link href="/" className="flex items-center">
+                    <Link href="/" className="flex min-w-0 items-center">
                         {logoUrl ? (
                             <Image
                                 src={logoUrl}
@@ -62,7 +66,7 @@ const Navbar = () => {
                                 className="object-contain max-h-10"
                             />
                         ) : (
-                            <span className="text-2xl font-semibold text-slate-800 font-primary">{storeName}</span>
+                            <span className="truncate text-xl font-semibold text-slate-800 font-primary sm:text-2xl">{storeName}</span>
                         )}
                     </Link>
 
@@ -129,22 +133,22 @@ const Navbar = () => {
                         )}
                     </div>
 
-                    {/* Mobile: cart + auth icons */}
-                    <div className="md:hidden flex items-center gap-3">
-                        <form onSubmit={handleSearch} className="flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-full text-sm">
-                            <Search size={16} className="text-slate-500 shrink-0" />
-                            <input
-                                className="w-28 bg-transparent outline-none placeholder-slate-500 text-xs"
-                                type="text"
-                                placeholder="Search…"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </form>
-                        <Link href="/cart" className="relative text-slate-600">
-                            <ShoppingCart size={20} />
-                            {cartCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 text-[9px] text-white bg-[var(--primary)] size-4 rounded-full flex items-center justify-center font-medium">
+                    {/* Mobile: search + cart. Search collapses to an icon so a long store
+                        name or a narrow phone can never push the cart off-screen. */}
+                    <div className="md:hidden flex shrink-0 items-center">
+                        <button
+                            type="button"
+                            onClick={() => setSearchOpen((v) => !v)}
+                            aria-label={searchOpen ? 'Close search' : 'Search products'}
+                            aria-expanded={searchOpen}
+                            className="flex size-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100"
+                        >
+                            {searchOpen ? <X size={20} /> : <Search size={20} />}
+                        </button>
+                        <Link href="/cart" aria-label="Cart" className="relative flex size-11 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100">
+                            <ShoppingCart size={21} />
+                            {mounted && cartCount > 0 && (
+                                <span className="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-[var(--primary)] text-[9px] font-medium text-white">
                                     {cartCount > 9 ? '9+' : cartCount}
                                 </span>
                             )}
@@ -152,6 +156,22 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
+            {searchOpen && (
+                <form onSubmit={handleSearch} className="md:hidden border-t border-gray-100 px-6 py-3">
+                    <div className="flex items-center gap-2 rounded-full bg-slate-100 px-4 py-3">
+                        <Search size={16} className="shrink-0 text-slate-500" />
+                        <input
+                            autoFocus
+                            type="search"
+                            enterKeyHint="search"
+                            className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder-slate-500"
+                            placeholder="Search products…"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                </form>
+            )}
             <hr className="border-gray-200" />
         </nav>
     )

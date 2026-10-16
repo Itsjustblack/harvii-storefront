@@ -1,18 +1,29 @@
-const STEPS = ['Contact & Address', 'Review Order', 'Payment']
+const STEPS = [
+    { full: 'Contact & Address', short: 'Details' },
+    { full: 'Review Order', short: 'Review' },
+    { full: 'Payment', short: 'Payment' },
+]
 
+// Fluid on every width: circles with flexible connector lines between them, and
+// labels that shorten on phones instead of overflowing the screen.
 export default function CheckoutProgress({ currentStep }) {
     return (
-        <div className="flex items-center justify-center mb-10">
-            {STEPS.map((label, i) => {
+        <ol className="mb-8 flex w-full items-start sm:mb-10" aria-label="Checkout progress">
+            {STEPS.map((step, i) => {
                 const stepNum = i + 1
                 const isDone = stepNum < currentStep
                 const isActive = stepNum === currentStep
+                const last = i === STEPS.length - 1
 
                 return (
-                    <div key={label} className="flex items-center">
-                        <div className="flex flex-col items-center">
+                    <li
+                        key={step.full}
+                        className={`flex items-start ${last ? 'shrink-0' : 'min-w-0 flex-1'}`}
+                        aria-current={isActive ? 'step' : undefined}
+                    >
+                        <div className="flex w-16 shrink-0 flex-col items-center sm:w-28">
                             <div
-                                className={`size-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                                className={`flex size-9 items-center justify-center rounded-full text-sm font-semibold transition-all ${
                                     isDone
                                         ? 'bg-green-500 text-white'
                                         : isActive
@@ -23,23 +34,24 @@ export default function CheckoutProgress({ currentStep }) {
                                 {isDone ? '✓' : stepNum}
                             </div>
                             <p
-                                className={`text-xs mt-1.5 whitespace-nowrap font-medium ${
-                                    isActive ? 'text-[var(--primary)]' : isDone ? 'text-green-500' : 'text-slate-400'
+                                className={`mt-1.5 text-center text-[11px] font-medium leading-tight sm:text-xs ${
+                                    isActive ? 'text-[var(--primary)]' : isDone ? 'text-green-600' : 'text-slate-400'
                                 }`}
                             >
-                                {label}
+                                <span className="sm:hidden">{step.short}</span>
+                                <span className="hidden sm:inline">{step.full}</span>
                             </p>
                         </div>
-                        {i < STEPS.length - 1 && (
+                        {!last && (
                             <div
-                                className={`w-16 sm:w-24 h-0.5 mx-2 mb-4 transition-all ${
+                                className={`mt-[17px] h-0.5 min-w-4 flex-1 transition-all ${
                                     isDone ? 'bg-green-400' : 'bg-slate-200'
                                 }`}
                             />
                         )}
-                    </div>
+                    </li>
                 )
             })}
-        </div>
+        </ol>
     )
 }

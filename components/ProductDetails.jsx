@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -10,8 +10,10 @@ import VariantPicker, {
 	getMissingRequiredGroups,
 } from "./VariantPicker";
 import BundleContents from "./BundleContents";
+import ShareButton from "./ShareButton";
 import { addToCart, buildCartKey } from "@/lib/features/cart/cartSlice";
 import { formatPrice } from '@/lib/money'
+import { notifyAddedToCart } from '@/lib/notifyAddedToCart'
 
 const PLACEHOLDER =
 	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
@@ -29,6 +31,31 @@ const ProductDetails = ({ product }) => {
 	const [variants, setVariants] = useState({});
 	const [added, setAdded] = useState(false);
 	const [qty, setQty] = useState(1);
+	const addRowRef = useRef(null);
+	const [mainButtonOffscreen, setMainButtonOffscreen] = useState(false);
+	const [footerVisible, setFooterVisible] = useState(false);
+	const showStickyBar = mainButtonOffscreen && !footerVisible;
+
+	// On phones, keep the buy button in reach once the main one scrolls away.
+	useEffect(() => {
+		const el = addRowRef.current;
+		if (!el || typeof IntersectionObserver === "undefined") return;
+		const observer = new IntersectionObserver(
+			([entry]) => setMainButtonOffscreen(!entry.isIntersecting),
+			{ rootMargin: "0px 0px -72px 0px" },
+		);
+		observer.observe(el);
+		const footer = document.querySelector("footer");
+		let footerObserver;
+		if (footer) {
+			footerObserver = new IntersectionObserver(([entry]) => setFooterVisible(entry.isIntersecting));
+			footerObserver.observe(footer);
+		}
+		return () => {
+			observer.disconnect();
+			footerObserver?.disconnect();
+		};
+	}, []);
 
 	const variantGroups = product.variant_metadata?.variant_groups;
 	const basePrice = Number(product.price);
@@ -61,6 +88,12 @@ const ProductDetails = ({ product }) => {
 		);
 		setAdded(true);
 		setTimeout(() => setAdded(false), 2000);
+		notifyAddedToCart({
+			name: product.name,
+			imageUrl: product.image_url || product.images?.[0],
+			quantity: qty,
+			onViewCart: () => router.push("/cart"),
+		});
 	};
 
 	return (
@@ -120,9 +153,16 @@ const ProductDetails = ({ product }) => {
 				{/* <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">
 					{product.category}
 				</p> */}
-				<h1 className="font-primary font-bold text-4xl sm:text-5xl lg:text-[50px] tracking-[-0.035em] text-black mb-3.5">
-					{product.name}
-				</h1>
+				<div className="mb-3.5 flex items-start justify-between gap-3">
+					<h1 className="font-primary font-bold text-4xl sm:text-5xl lg:text-[50px] tracking-[-0.035em] text-black break-words min-w-0">
+						{product.name}
+					</h1>
+					<ShareButton
+						title={product.name}
+						text={`Check out ${product.name}`}
+						className="mt-1.5"
+					/>
+				</div>
 
 				<div className="mt-4 pb-3.5 border-b border-primary/20">
 					<div className="flex items-center justify-between gap-3">
@@ -223,7 +263,7 @@ const ProductDetails = ({ product }) => {
 				)}
 
 				{/* Quantity + Add to Cart */}
-				<div className="flex items-stretch gap-3.5 mt-7.5">
+				<div ref={addRowRef} className="flex items-stretch gap-3.5 mt-7.5">
 					<div className="flex items-center gap-1 border-[1.5px] border-black/10 bg-white rounded-xl p-1">
 						<button
 							type="button"
@@ -276,6 +316,30 @@ const ProductDetails = ({ product }) => {
 						)}
 					</button>
 				</div>
+			</div>
+
+			{/* Phones only: appears above the tab bar once the main button is off-screen */}
+			<div
+				className={`md:hidden fixed inset-x-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur transition-transform duration-200 ${
+					showStickyBar && !isOutOfStock ? "translate-y-0" : "translate-y-full pointer-events-none"
+				}`}
+				style={{ bottom: "calc(4rem + env(safe-area-inset-bottom))" }}
+				aria-hidden={!(showStickyBar && !isOutOfStock)}
+			>
+				<button
+					type="button"
+					onClick={handleAddToCart}
+					tabIndex={showStickyBar && !isOutOfStock ? 0 : -1}
+					className="flex min-h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-primary px-6 text-base font-semibold text-white transition active:scale-[0.99]"
+				>
+					{added ? (
+						<><Check size={18} /> Added!</>
+					) : inCart ? (
+						<><ShoppingCart size={18} /> View Cart</>
+					) : (
+						<><ShoppingCart size={18} /> Add to Cart · {formatPrice(displayPrice * qty)}</>
+					)}
+				</button>
 			</div>
 		</div>
 	);

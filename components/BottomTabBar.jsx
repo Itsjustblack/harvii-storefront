@@ -19,15 +19,15 @@ export default function BottomTabBar() {
     useEffect(() => setMounted(true), [])
 
     return (
-        <nav className="md:hidden sticky top-0 z-40 bg-white border-b border-slate-200">
-            <div className="flex items-center justify-around h-16">
+        <nav aria-label="Main" className="md:hidden fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]">
+            <div className="flex h-16 items-center justify-around">
                 {tabs.map(({ href, label, Icon }) => {
                     const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
                     return (
                         <Link
                             key={href}
                             href={href}
-                            className={`flex flex-col items-center gap-0.5 flex-1 py-2 transition-colors ${
+                            className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
                                 isActive ? 'text-[var(--primary)]' : 'text-slate-400'
                             }`}
                         >

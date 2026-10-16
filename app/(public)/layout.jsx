@@ -41,9 +41,15 @@ export default async function StorefrontLayout({ children }) {
 		<>
 			<Banner />
 			<Navbar />
-			<BottomTabBar />
 			<main>{children}</main>
 			<Footer />
+			{/* Reserves room so the fixed bottom tab bar never covers the footer on phones */}
+			<div
+				className="md:hidden"
+				aria-hidden="true"
+				style={{ height: "calc(4rem + env(safe-area-inset-bottom))" }}
+			/>
+			<BottomTabBar />
 			<AIChat />
 		</>
 	);
