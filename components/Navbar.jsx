@@ -1,7 +1,7 @@
 'use client'
+import BrandLogo from '@/components/BrandLogo'
 import { Search, ShoppingCart, User, LogOut, Package, X } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
@@ -58,13 +58,7 @@ const Navbar = () => {
                     {/* Brand / Logo */}
                     <Link href="/" className="flex min-w-0 items-center">
                         {logoUrl ? (
-                            <Image
-                                src={logoUrl}
-                                alt={storeName}
-                                width={120}
-                                height={40}
-                                className="object-contain max-h-10"
-                            />
+                            <BrandLogo config={config} alt={storeName} />
                         ) : (
                             <span className="truncate text-xl font-semibold text-slate-800 font-primary sm:text-2xl">{storeName}</span>
                         )}

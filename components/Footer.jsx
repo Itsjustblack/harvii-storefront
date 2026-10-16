@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
+import BrandLogo from "@/components/BrandLogo";
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from "lucide-react";
 import { useStorefront } from "@/context/StorefrontContext";
 import { HARVII_MARKETING_URL } from "@/lib/env";
@@ -56,13 +56,7 @@ export default function Footer() {
 				<div className="grid grid-cols-1 sm:grid-cols-[1.6fr_1fr_1.2fr] gap-10 pb-12 border-b border-slate-200">
 					<div>
 						{logoUrl ? (
-							<Image
-								src={logoUrl}
-								alt={storeName}
-								width={120}
-								height={40}
-								className="object-contain max-h-10"
-							/>
+							<BrandLogo config={config} alt={storeName} />
 						) : (
 							<p className="font-primary font-extrabold text-[28px] tracking-[-0.04em] text-(--primary)">
 								{wordmark}

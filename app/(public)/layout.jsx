@@ -33,7 +33,8 @@ export default async function StorefrontLayout({ children }) {
 	if (config && !config.is_published) {
 		const params = new URLSearchParams();
 		params.set("store", config.store_name || "");
-		if (config.logo_url) params.set("logo", config.logo_url);
+		const brandIcon = config.brand_assets?.icon?.urls?.png192 || config.logo_url;
+		if (brandIcon) params.set("logo", brandIcon);
 		redirect(`/coming-soon?${params}`);
 	}
 

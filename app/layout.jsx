@@ -32,10 +32,24 @@ export async function generateMetadata() {
 	const slug = await getSlug();
 	try {
 		const config = await getStorefrontConfig(slug);
+		const icon = config.brand_assets?.icon?.urls
 		return {
 			title: config.seo_title || config.store_name || "Harvii Store",
 			description: config.seo_description || config.tagline || "",
-			icons: config.favicon_url ? { icon: config.favicon_url } : {},
+			// Processed sizes when the merchant cropped an icon; otherwise whatever favicon they uploaded
+			icons: icon
+				? {
+						icon: [
+							{ url: icon.ico, sizes: "any" },
+							{ url: icon.png32, sizes: "32x32", type: "image/png" },
+							{ url: icon.png192, sizes: "192x192", type: "image/png" },
+						],
+						apple: [{ url: icon.apple180, sizes: "180x180", type: "image/png" }],
+					}
+				: config.favicon_url
+					? { icon: config.favicon_url }
+					: {},
+			manifest: icon ? "/manifest.webmanifest" : undefined,
 		};
 	} catch {
 		return { title: "Harvii Store" };
