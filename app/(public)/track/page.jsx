@@ -5,6 +5,7 @@ import { Search, MessageCircle, ChevronRight } from 'lucide-react'
 import OrderTracker from '@/components/OrderTracker'
 import { useStorefront } from '@/context/StorefrontContext'
 import { trackOrder } from '@/lib/api'
+import { formatPrice } from '@/lib/money'
 
 function normaliseWhatsApp(raw) {
     if (!raw) return null
@@ -76,7 +77,7 @@ function OrderList({ orders, config, onSelect }) {
                             </span>
                             {order.total != null && (
                                 <span className="font-semibold text-slate-800 text-sm">
-                                    ₦{Number(order.total).toLocaleString()}
+                                    {formatPrice(order.total)}
                                 </span>
                             )}
                             <ChevronRight size={16} className="text-slate-400 shrink-0" />

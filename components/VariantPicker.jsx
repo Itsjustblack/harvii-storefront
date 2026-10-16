@@ -1,5 +1,7 @@
 "use client";
 
+import { formatPrice } from '@/lib/money'
+
 /**
  * Reads the real variant schema saved by the merchant dashboard:
  * variant_metadata.variant_groups = [{ name, key, type, required, options?, price_adjustment?, ... }]
@@ -116,7 +118,7 @@ function SelectGroup({ group, value, onChange, hasError }) {
 									<span
 										className={isSelected ? "text-white/70" : "text-black/70"}
 									>
-										- ₦{Number(opt.price_adjustment).toLocaleString()}
+										- {formatPrice(opt.price_adjustment)}
 									</span>
 								)}
 							</button>
@@ -181,8 +183,8 @@ function AddonsGroup({ groups, value, onChange }) {
 									)}
 								</span>
 								{group.price_adjustment > 0 && (
-									<span className="text-[14px] font-semibold text-primary font-primary">
-										₦{Number(group.price_adjustment).toLocaleString()}
+									<span className="text-[14px] font-semibold text-slate-900 font-primary">
+										{formatPrice(group.price_adjustment)}
 									</span>
 								)}
 							</span>
@@ -282,18 +284,15 @@ function RangeGroup({ group, value, onChange, hasError }) {
 					current !== "" && (
 						<span className="inline-flex items-center gap-2 ml-1">
 							<span className="text-[15px] text-[#CFCDC6] font-medium">=</span>
-							<span className="font-primary font-bold text-xl tracking-wide text-primary">
-								₦
-								{(
-									Number(current) * Number(group.price_per_unit)
-								).toLocaleString()}
+							<span className="font-primary font-bold text-xl tracking-wide text-slate-900">
+								{formatPrice(Number(current) * Number(group.price_per_unit))}
 							</span>
 						</span>
 					)}
 			</div>
 			{group.price_per_unit > 0 && (
 				<p className="mt-2.5 text-[12.5px] text-[#A8A6A0] font-medium">
-					Charged at ₦{Number(group.price_per_unit).toLocaleString()} /{" "}
+					Charged at {formatPrice(group.price_per_unit)} /{" "}
 					{group.unit || "unit"}
 				</p>
 			)}

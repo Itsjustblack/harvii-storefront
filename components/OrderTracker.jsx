@@ -1,5 +1,7 @@
 'use client'
 
+import { formatPrice } from '@/lib/money'
+
 const STATUS_COLORS = {
     pending: 'bg-amber-100 text-amber-700',
     processing: 'bg-blue-100 text-blue-700',
@@ -69,19 +71,19 @@ export default function OrderTracker({ order }) {
                 {order.item_total != null && (
                     <div className="flex justify-between text-slate-600">
                         <span>Items total</span>
-                        <span>₦{Number(order.item_total || 0).toLocaleString()}</span>
+                        <span>{formatPrice(order.item_total || 0)}</span>
                     </div>
                 )}
                 {Number(order.delivery_fee) > 0 && (
                     <div className="flex justify-between text-slate-600">
                         <span>Delivery fee</span>
-                        <span>₦{Number(order.delivery_fee).toLocaleString()}</span>
+                        <span>{formatPrice(order.delivery_fee)}</span>
                     </div>
                 )}
                 {order.promo_code && Number(order.discount_amount) > 0 && (
                     <div className="flex justify-between text-green-600">
                         <span>Promo ({order.promo_code})</span>
-                        <span>−₦{Number(order.discount_amount).toLocaleString()}</span>
+                        <span>−{formatPrice(order.discount_amount)}</span>
                     </div>
                 )}
 
@@ -89,7 +91,7 @@ export default function OrderTracker({ order }) {
 
                 <div className="flex justify-between font-semibold text-slate-800 text-base">
                     <span>Total</span>
-                    <span>₦{Number(order.total || 0).toLocaleString()}</span>
+                    <span>{formatPrice(order.total || 0)}</span>
                 </div>
             </div>
         </div>

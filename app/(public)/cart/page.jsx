@@ -14,6 +14,7 @@ import {
     formatVariantSelections,
 } from '@/components/VariantPicker'
 import { deleteItemFromCart, updateCartItemVariants, buildCartKey } from '@/lib/features/cart/cartSlice'
+import { formatPrice } from '@/lib/money'
 
 function useCartRowVariants(item) {
     const variantGroups = item.variant_metadata?.variant_groups
@@ -83,7 +84,7 @@ function CartRowDesktop({ cartKey, item, isEditing, onEdit, onCloseEdit, onVaria
                         <Link href={`/product/${item.product_id}`} className="font-medium text-slate-800 hover:underline line-clamp-2 max-w-48">
                             {item.name}
                         </Link>
-                        <p className="text-slate-400 text-xs mt-0.5">₦{Number(item.price).toLocaleString()} each</p>
+                        <p className="text-slate-400 text-xs mt-0.5">{formatPrice(item.price)} each</p>
                         {v.selections.length > 0 && (
                             <p className="text-slate-400 text-xs mt-0.5">
                                 {v.selections.map((s) => `${s.name}: ${s.display}`).join(', ')}
@@ -99,7 +100,7 @@ function CartRowDesktop({ cartKey, item, isEditing, onEdit, onCloseEdit, onVaria
                 </div>
             </td>
             <td className="py-5 text-center font-medium text-slate-800">
-                ₦{(item.price * item.quantity).toLocaleString()}
+                {formatPrice(item.price * item.quantity)}
             </td>
             <td className="py-5 text-center">
                 <button
@@ -126,7 +127,7 @@ function CartRowMobile({ cartKey, item, isEditing, onEdit, onCloseEdit, onVarian
                     <Link href={`/product/${item.product_id}`} className="font-medium text-slate-800 text-sm hover:underline line-clamp-2">
                         {item.name}
                     </Link>
-                    <p className="text-slate-400 text-xs mt-0.5">₦{Number(item.price).toLocaleString()} each</p>
+                    <p className="text-slate-400 text-xs mt-0.5">{formatPrice(item.price)} each</p>
                     {v.selections.length > 0 && (
                         <p className="text-slate-400 text-xs mt-0.5">
                             {v.selections.map((s) => `${s.name}: ${s.display}`).join(', ')}
@@ -145,7 +146,7 @@ function CartRowMobile({ cartKey, item, isEditing, onEdit, onCloseEdit, onVarian
 
             <div className="flex items-center justify-between">
                 <Counter cartKey={cartKey} />
-                <p className="font-medium text-slate-800 text-sm">₦{(item.price * item.quantity).toLocaleString()}</p>
+                <p className="font-medium text-slate-800 text-sm">{formatPrice(item.price * item.quantity)}</p>
             </div>
         </div>
     )

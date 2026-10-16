@@ -11,6 +11,7 @@ import VariantPicker, {
 } from "./VariantPicker";
 import BundleContents from "./BundleContents";
 import { addToCart, buildCartKey } from "@/lib/features/cart/cartSlice";
+import { formatPrice } from '@/lib/money'
 
 const PLACEHOLDER =
 	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
@@ -130,13 +131,13 @@ const ProductDetails = ({ product }) => {
 								<>
 									{/* <span className="text-[15px] text-[#9A988F]">From</span> */}
 									<span className="font-primary font-bold text-2xl sm:text-[28px] lg:text-[34px] tracking-[-0.02em] text-black">
-										₦{(basePrice + minAdjustment).toLocaleString()}
+										{formatPrice(basePrice + minAdjustment)}
 									</span>
 								</>
 							) : (
 								<>
 									<span className="font-primary font-bold text-2xl sm:text-[28px] lg:text-[34px] tracking-[-0.02em] text-black">
-										₦{displayPrice.toLocaleString()}
+										{formatPrice(displayPrice)}
 									</span>
 									{priceAdjustment !== 0 && (
 										<span className="text-[13px] text-primary/60 self-center">
@@ -270,8 +271,7 @@ const ProductDetails = ({ product }) => {
 							</>
 						) : (
 							<>
-								<ShoppingCart size={18} /> Add to Cart · ₦
-								{(displayPrice * qty).toLocaleString()}
+								<ShoppingCart size={18} /> Add to Cart · {formatPrice(displayPrice * qty)}
 							</>
 						)}
 					</button>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, ShoppingBag } from "lucide-react";
 import QuickAddSheet from "./QuickAddSheet";
 import { getMinPriceAdjustment } from "./VariantPicker";
+import { formatPrice } from '@/lib/money'
 
 const PLACEHOLDER =
 	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
@@ -81,11 +82,11 @@ const ProductCard = ({ product }) => {
 					<p className="min-w-0 flex-1 truncate font-semibold text-[15px] leading-4.5 text-[#1A1A1A]">
 						{product.name}
 					</p>
-					<p className="shrink-0 font-semibold text-[15px] leading-4.5 text-primary font-primary">
+					<p className="shrink-0 font-semibold text-[15px] leading-4.5 text-slate-900 font-primary">
 						{/* {fromPrice && (
 								<span className="text-slate-400 font-normal mr-0.5">From</span>
 							)} */}
-						₦ {(Number(product.price) + minAdjustment).toLocaleString()}
+						{formatPrice(Number(product.price) + minAdjustment)}
 					</p>
 				</div>
 				{/* {product.category && (

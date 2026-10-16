@@ -1,6 +1,7 @@
 'use client'
 import Image from 'next/image'
 import { Sparkles } from 'lucide-react'
+import { formatPrice } from '@/lib/money'
 
 const PLACEHOLDER = 'https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png'
 
@@ -82,7 +83,7 @@ export default function BundleContents({ components, bundlePrice, currency = 'NG
                 <div className="px-5 py-3.5 bg-green-50 border-t border-green-100 flex items-center gap-2">
                     <Sparkles size={15} className="text-green-600 shrink-0" />
                     <p className="text-sm text-green-700">
-                        <span className="font-semibold">You save ₦{savings.toLocaleString()}</span>
+                        <span className="font-semibold">You save {formatPrice(savings)}</span>
                         {savingsPct > 0 && <span className="text-green-600"> ({savingsPct}% off buying separately)</span>}
                     </p>
                 </div>

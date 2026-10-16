@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { formatPrice } from '@/lib/money'
 
 export default function CartSummary({ subtotal, itemCount, disableCheckout = false }) {
     return (
@@ -9,7 +10,7 @@ export default function CartSummary({ subtotal, itemCount, disableCheckout = fal
             <div className="space-y-3 text-sm text-slate-600">
                 <div className="flex justify-between">
                     <span>Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'})</span>
-                    <span className="font-medium text-slate-800">₦{Number(subtotal).toLocaleString()}</span>
+                    <span className="font-medium text-slate-800">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                     <span>Delivery fee</span>
@@ -21,7 +22,7 @@ export default function CartSummary({ subtotal, itemCount, disableCheckout = fal
 
             <div className="flex justify-between font-semibold text-slate-800 text-base">
                 <span>Total</span>
-                <span>₦{Number(subtotal).toLocaleString()}</span>
+                <span>{formatPrice(subtotal)}</span>
             </div>
 
             {disableCheckout ? (

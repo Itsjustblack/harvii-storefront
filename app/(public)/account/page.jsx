@@ -8,6 +8,7 @@ import { Package, LogOut, ChevronRight, User } from 'lucide-react'
 import { clearAuth } from '@/lib/features/auth/authSlice'
 import { useStorefront } from '@/context/StorefrontContext'
 import { getAccountOrders } from '@/lib/api'
+import { formatPrice } from '@/lib/money'
 
 const STATUS_COLORS = {
     pending: 'bg-amber-100 text-amber-700',
@@ -59,7 +60,7 @@ function OrderList({ orders, email }) {
                             </span>
                             {order.total != null && (
                                 <span className="font-semibold text-slate-800 text-sm">
-                                    ₦{Number(order.total).toLocaleString()}
+                                    {formatPrice(order.total)}
                                 </span>
                             )}
                             <ChevronRight size={16} className="text-slate-400" />

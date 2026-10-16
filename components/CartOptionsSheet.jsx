@@ -7,6 +7,7 @@ import VariantPicker, {
 	computePriceAdjustment,
 	getMissingRequiredGroups,
 } from "./VariantPicker";
+import { formatPrice } from '@/lib/money'
 
 const PLACEHOLDER =
 	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
@@ -96,12 +97,12 @@ export default function CartOptionsSheet({
 							{item.name}
 						</h2>
 						<div className="text-right shrink-0">
-							<p className="text-xl font-bold font-primary text-[var(--primary)]">
-								₦{unitPrice.toLocaleString()}
+							<p className="text-xl font-bold font-primary text-slate-900">
+								{formatPrice(unitPrice)}
 							</p>
 							{adjustment !== 0 && (
 								<p className="text-xs text-slate-400 mt-0.5">
-									base ₦{basePrice.toLocaleString()}
+									base {formatPrice(basePrice)}
 								</p>
 							)}
 						</div>

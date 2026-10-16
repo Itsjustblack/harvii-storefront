@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Copy, CheckCheck, Clock } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { formatPrice } from '@/lib/money'
 
 function useCountdown(expiresAt) {
     const [timeLeft, setTimeLeft] = useState('')
@@ -43,7 +44,7 @@ export default function PaymentInstructions({ payment, expiresAt, total, onConfi
             <div className="bg-slate-50 rounded-2xl p-6 text-center">
                 <p className="text-sm text-slate-500 mb-1">Transfer exactly</p>
                 <p className="text-4xl font-bold text-slate-800">
-                    ₦{Number(total).toLocaleString()}
+                    {formatPrice(total)}
                 </p>
             </div>
 

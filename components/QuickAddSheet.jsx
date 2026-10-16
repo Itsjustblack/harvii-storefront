@@ -10,6 +10,7 @@ import VariantPicker, {
 	computePriceAdjustment,
 	getMissingRequiredGroups,
 } from "./VariantPicker";
+import { formatPrice } from '@/lib/money'
 
 const PLACEHOLDER =
 	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
@@ -117,12 +118,12 @@ export default function QuickAddSheet({ product, isOpen, onClose }) {
 							{product.name}
 						</h2>
 						<div className="text-right shrink-0">
-							<p className="text-xl font-bold font-primary text-[var(--primary)]">
-								₦{unitPrice.toLocaleString()}
+							<p className="text-xl font-bold font-primary text-slate-900">
+								{formatPrice(unitPrice)}
 							</p>
 							{adjustment !== 0 && (
 								<p className="text-xs text-slate-400 mt-0.5">
-									base ₦{Number(product.price).toLocaleString()}
+									base {formatPrice(product.price)}
 								</p>
 							)}
 						</div>
@@ -183,7 +184,7 @@ export default function QuickAddSheet({ product, isOpen, onClose }) {
 						className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[var(--primary)] text-white rounded-xl font-medium text-sm hover:opacity-90 active:scale-[0.98] transition"
 					>
 						<ShoppingCart size={15} />
-						Add to Cart · ₦{(unitPrice * qty).toLocaleString()}
+						Add to Cart · {formatPrice(unitPrice * qty)}
 					</button>
 				</div>
 			</div>

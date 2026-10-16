@@ -5,6 +5,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import toast from 'react-hot-toast'
 import { CheckCircle2 } from 'lucide-react'
 import CheckoutProgress from '@/components/CheckoutProgress'
+import DeliveryPicker from '@/components/DeliveryPicker'
+import { formatPrice } from '@/lib/money'
 import PaymentInstructions from '@/components/PaymentInstructions'
 import { useStorefront } from '@/context/StorefrontContext'
 import { clearCart } from '@/lib/features/cart/cartSlice'
@@ -21,6 +23,8 @@ import {
 } from '@/lib/features/checkout/checkoutSlice'
 import {
     createCheckout,
+    getDeliveryOptions,
+    resolveDeliveryOption,
     submitAddress,
     applyPromo,
     removePromo,
@@ -28,14 +32,6 @@ import {
     getCheckoutStatus,
 } from '@/lib/api'
 import { getMissingRequiredGroups, formatVariantSelections } from '@/components/VariantPicker'
-
-const NIGERIAN_STATES = [
-    'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
-    'Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo',
-    'Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa',
-    'Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba',
-    'Yobe','Zamfara',
-]
 
 function InputField({ label, required, ...props }) {
     return (
@@ -55,7 +51,7 @@ function InputField({ label, required, ...props }) {
 // ─── Step 1: Contact & Address ─────────────────────────────────────────────
 function StepContact({ onNext }) {
     const dispatch = useDispatch()
-    const { slug } = useStorefront()
+    const { slug, config } = useStorefront()
     const { cartItems } = useSelector((s) => s.cart)
     const checkout = useSelector((s) => s.checkout)
     const [form, setForm] = useState({
@@ -63,12 +59,27 @@ function StepContact({ onNext }) {
         email: checkout.customerInfo.email || '',
         phone: checkout.customerInfo.phone || '',
         address: checkout.addressInfo.address || '',
-        state: checkout.addressInfo.state || '',
     })
+    const [delivery, setDelivery] = useState(checkout.addressInfo.delivery || null)
+    const [options, setOptions] = useState([])
+    const [optionsLoading, setOptionsLoading] = useState(true)
+
+    useEffect(() => {
+        let cancelled = false
+        getDeliveryOptions(slug)
+            .then((data) => { if (!cancelled) setOptions(data.options || []) })
+            .catch(() => {})
+            .finally(() => { if (!cancelled) setOptionsLoading(false) })
+        return () => { cancelled = true }
+    }, [slug])
     const [loading, setLoading] = useState(false)
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        if (!delivery) {
+            toast.error('Choose where to deliver first.')
+            return
+        }
         setLoading(true)
         try {
             const cartArr = Object.values(cartItems).map((item) => ({
@@ -87,11 +98,11 @@ function StepContact({ onNext }) {
 
             const deliveryData = await submitAddress(slug, token, {
                 address: form.address,
-                state: form.state,
+                delivery_zone_id: delivery.zone_id,
             })
 
             dispatch(setCustomerInfo({ name: form.name, email: form.email, phone: form.phone }))
-            dispatch(setAddressInfo({ address: form.address, state: form.state }))
+            dispatch(setAddressInfo({ address: form.address, delivery }))
             dispatch(setToken({ token, expiresAt: null }))
             dispatch(setDelivery({
                 fee: deliveryData.delivery_fee,
@@ -113,23 +124,20 @@ function StepContact({ onNext }) {
             <InputField label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="jane@example.com" />
             <InputField label="Phone Number" type="tel" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+234 800 000 0000" />
             <InputField label="Street Address" required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 Main Street" />
-            <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                    State <span className="text-red-400">*</span>
-                </label>
-                <select
-                    required
-                    value={form.state}
-                    onChange={(e) => setForm({ ...form, state: e.target.value })}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[var(--primary)] transition bg-white"
-                >
-                    <option value="">Select state…</option>
-                    {NIGERIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-            </div>
+            {optionsLoading ? (
+                <p className="text-sm text-slate-400">Loading delivery areas…</p>
+            ) : (
+                <DeliveryPicker
+                    options={options}
+                    value={delivery}
+                    onChange={setDelivery}
+                    onResolve={(q) => resolveDeliveryOption(slug, q)}
+                    storeName={config?.store_name}
+                />
+            )}
             <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !delivery}
                 className="w-full py-4 bg-[var(--primary)] text-white rounded-xl font-medium text-sm hover:opacity-90 active:scale-95 transition disabled:opacity-60 mt-4"
             >
                 {loading ? 'Processing…' : 'Continue to Review →'}
@@ -157,7 +165,7 @@ function StepReview({ onNext, onBack }) {
         try {
             const data = await applyPromo(slug, token, promoCode.trim())
             dispatch(setPromo({ code: data.code, discount_amount: data.discount_amount, new_total: data.new_total }))
-            toast.success(`Promo applied! Saved ₦${Number(data.discount_amount).toLocaleString()}`)
+            toast.success(`Promo applied! Saved ${formatPrice(data.discount_amount)}`)
         } catch (err) {
             toast.error(err.message || 'Invalid promo code')
         }
@@ -215,7 +223,7 @@ function StepReview({ onNext, onBack }) {
                         </div>
                         <p className="text-xs text-slate-400">×{item.quantity}</p>
                         <p className="text-sm font-medium text-slate-800 shrink-0">
-                            ₦{(item.price * item.quantity).toLocaleString()}
+                            {formatPrice(item.price * item.quantity)}
                         </p>
                     </div>
                     )
@@ -242,7 +250,7 @@ function StepReview({ onNext, onBack }) {
             ) : (
                 <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-5">
                     <p className="text-sm text-green-700">
-                        Promo <strong>{promo.code}</strong> — saved ₦{Number(promo.discount_amount).toLocaleString()}
+                        Promo <strong>{promo.code}</strong> — saved {formatPrice(promo.discount_amount)}
                     </p>
                     <button onClick={handleRemovePromo} disabled={promoLoading} className="text-xs text-red-400 hover:underline">Remove</button>
                 </div>
@@ -252,22 +260,22 @@ function StepReview({ onNext, onBack }) {
             <div className="space-y-3 text-sm text-slate-600 bg-white border border-slate-100 rounded-2xl px-5 py-4 mb-6">
                 <div className="flex justify-between">
                     <span>Items</span>
-                    <span>₦{Number(delivery.item_total).toLocaleString()}</span>
+                    <span>{formatPrice(delivery.item_total)}</span>
                 </div>
                 <div className="flex justify-between">
                     <span>Delivery</span>
-                    <span>₦{Number(delivery.fee).toLocaleString()}</span>
+                    <span>{formatPrice(delivery.fee)}</span>
                 </div>
                 {promo && Number(promo.discount_amount) > 0 && (
                     <div className="flex justify-between text-green-600">
                         <span>Discount</span>
-                        <span>−₦{Number(promo.discount_amount).toLocaleString()}</span>
+                        <span>−{formatPrice(promo.discount_amount)}</span>
                     </div>
                 )}
                 <hr className="border-slate-100" />
                 <div className="flex justify-between font-semibold text-slate-800 text-base">
                     <span>Total</span>
-                    <span>₦{Number(currentTotal).toLocaleString()}</span>
+                    <span>{formatPrice(currentTotal)}</span>
                 </div>
             </div>
 
