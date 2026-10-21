@@ -124,12 +124,13 @@ const ProductDetails = ({ product }) => {
 
 				<div className="relative size-full bg-[#F4F5F6] rounded-lg overflow-hidden flex items-center justify-center">
 					{mainImage ? (
-						<div className="relative size-[80%]">
+						<div className="relative size-full">
 							<Image
 								src={mainImage}
 								alt={product.name}
 								fill
-								className="object-cover"
+								sizes="(max-width: 1024px) 100vw, 50vw"
+								className="object-contain p-3"
 							/>
 						</div>
 					) : (

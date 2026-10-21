@@ -22,22 +22,22 @@ const ProductCard = ({ product }) => {
 		<>
 			<Link
 				href={`/product/${product.product_id}`}
-				className={`group flex flex-col gap-3 w-full max-w-90 mx-auto ${isOutOfStock && "pointer-events-none opacity-70"}`}
+				className={`group flex flex-col gap-2.5 w-full max-w-90 mx-auto ${isOutOfStock && "pointer-events-none opacity-70"}`}
 				tabIndex={isOutOfStock ? -1 : undefined}
 			>
-				<div className="relative bg-[#F4F5F6] h-40 sm:h-68 rounded-lg flex items-center justify-center overflow-hidden">
-					<div className="relative size-[80%] aspect-square">
-						<Image
-							fill
-							className="object-cover"
-							src={imageUrl}
-							alt={product.name}
-						/>
-					</div>
+				<div className="relative bg-[#F4F5F6] aspect-square w-full rounded-lg overflow-hidden">
+					{/* contain: the whole product is always visible, never cropped */}
+					<Image
+						fill
+						sizes="(max-width: 640px) 50vw, 25vw"
+						className="object-contain p-2"
+						src={imageUrl}
+						alt={product.name}
+					/>
 					{product.category && (
-						<div className="absolute top-4 left-4 flex items-center gap-1.75 bg-white/90 backdrop-blur-sm px-3.25 py-1.75 rounded-full">
-							<span className="size-1.5 rounded-full bg-primary"></span>
-							<span className="text-xs font-semibold text-[#5C5A66]">
+						<div className="absolute top-2 left-2 max-w-[70%] flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full">
+							<span className="size-1.5 shrink-0 rounded-full bg-primary"></span>
+							<span className="truncate text-[11px] font-semibold text-[#5C5A66]">
 								{product.category}
 							</span>
 						</div>
@@ -50,7 +50,7 @@ const ProductCard = ({ product }) => {
 						</div>
 					)}
 					{product.storefront_featured && !isOutOfStock && (
-						<span className="absolute top-2 left-2 bg-primary text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+						<span className="absolute bottom-2 left-2 bg-primary text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
 							Featured
 						</span>
 					)}
@@ -67,7 +67,7 @@ const ProductCard = ({ product }) => {
 								setSheetOpen(true);
 							}}
 							aria-label="Quick add to cart"
-							className="absolute bottom-3 right-3 z-10 size-9 rounded-full bg-primary text-white flex items-center justify-center group/cart after:absolute after:p-8"
+							className="absolute bottom-2 right-2 z-10 size-9 rounded-full bg-primary text-white flex items-center justify-center group/cart after:absolute after:p-8"
 						>
 							<Plus
 								className="group-hover/cart:rotate-90 transition-transform duration-200"
@@ -78,11 +78,12 @@ const ProductCard = ({ product }) => {
 					)}
 				</div>
 
-				<div className="flex items-center justify-between gap-2">
-					<p className="min-w-0 flex-1 truncate font-semibold text-[15px] leading-4.5 text-[#1A1A1A]">
+				{/* name wraps to two lines so it can be read in full; price sits on its own line */}
+				<div className="flex flex-col gap-1">
+					<p className="line-clamp-2 break-words font-medium text-[14px] sm:text-[15px] leading-5 text-[#1A1A1A]">
 						{product.name}
 					</p>
-					<p className="shrink-0 font-semibold text-[15px] leading-4.5 text-slate-900 font-primary">
+					<p className="font-semibold text-[15px] leading-5 text-slate-900 font-primary">
 						{/* {fromPrice && (
 								<span className="text-slate-400 font-normal mr-0.5">From</span>
 							)} */}
