@@ -4,15 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus, ShoppingBag } from "lucide-react";
 import QuickAddSheet from "./QuickAddSheet";
+import NoPhoto from "./NoPhoto";
 import { getMinPriceAdjustment } from "./VariantPicker";
 import { formatPrice } from '@/lib/money'
 
-const PLACEHOLDER =
-	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
 
 const ProductCard = ({ product }) => {
 	const [sheetOpen, setSheetOpen] = useState(false);
-	const imageUrl = product.image_url || product.images?.[0] || PLACEHOLDER;
+	const imageUrl = product.image_url || product.images?.[0] || "";
 	const isOutOfStock = product.in_stock === false;
 	const minAdjustment = getMinPriceAdjustment(
 		product.variant_metadata?.variant_groups,
@@ -27,13 +26,17 @@ const ProductCard = ({ product }) => {
 			>
 				<div className="relative bg-[#F4F5F6] aspect-square w-full rounded-lg overflow-hidden">
 					{/* contain: the whole product is always visible, never cropped */}
-					<Image
-						fill
-						sizes="(max-width: 640px) 50vw, 25vw"
-						className="object-contain p-2"
-						src={imageUrl}
-						alt={product.name}
-					/>
+					{imageUrl ? (
+						<Image
+							fill
+							sizes="(max-width: 640px) 50vw, 25vw"
+							className="object-contain p-2"
+							src={imageUrl}
+							alt={product.name}
+						/>
+					) : (
+						<NoPhoto />
+					)}
 					{product.category && (
 						<div className="absolute top-2 left-2 max-w-[70%] flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full">
 							<span className="size-1.5 shrink-0 rounded-full bg-primary"></span>
@@ -78,9 +81,9 @@ const ProductCard = ({ product }) => {
 					)}
 				</div>
 
-				{/* name wraps to two lines so it can be read in full; price sits on its own line */}
+				{/* name wraps so it is always read in full; price sits on its own line */}
 				<div className="flex flex-col gap-1">
-					<p className="line-clamp-2 break-words font-medium text-[14px] sm:text-[15px] leading-5 text-[#1A1A1A]">
+					<p className="break-words font-medium text-[14px] sm:text-[15px] leading-5 text-[#1A1A1A]">
 						{product.name}
 					</p>
 					<p className="font-semibold text-[15px] leading-5 text-slate-900 font-primary">

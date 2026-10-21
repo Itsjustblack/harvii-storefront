@@ -1,4 +1,5 @@
 "use client";
+import NoPhoto from "./NoPhoto";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
@@ -9,8 +10,6 @@ import VariantPicker, {
 } from "./VariantPicker";
 import { formatPrice } from '@/lib/money'
 
-const PLACEHOLDER =
-	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
 
 export default function CartOptionsSheet({
 	item,
@@ -41,7 +40,7 @@ export default function CartOptionsSheet({
 
 	if (!item || !mounted) return null;
 
-	const imageUrl = item.image_url || PLACEHOLDER;
+	const imageUrl = item.image_url || "";
 	const basePrice = Number(item.base_price ?? item.price);
 	const adjustment = computePriceAdjustment(variantGroups, draftVariants);
 	const unitPrice = basePrice + adjustment;
@@ -81,13 +80,19 @@ export default function CartOptionsSheet({
 
 				{/* Image */}
 				<div className="m-5 mb-1 bg-[#F5F5F5] rounded-2xl flex items-center justify-center h-64 overflow-hidden">
-					<Image
-						src={imageUrl}
-						alt={item.name}
-						width={400}
-						height={400}
-						className="max-h-56 w-auto object-contain"
-					/>
+					{imageUrl ? (
+						<Image
+							src={imageUrl}
+							alt={item.name}
+							width={400}
+							height={400}
+							className="max-h-56 w-auto object-contain"
+						/>
+					) : (
+						<div className="relative size-full">
+							<NoPhoto />
+						</div>
+					)}
 				</div>
 
 				<div className="px-5 pb-10 pt-3">

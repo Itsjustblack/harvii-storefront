@@ -1,9 +1,9 @@
 'use client'
+import NoPhoto from "./NoPhoto"
 import Image from 'next/image'
 import { Sparkles } from 'lucide-react'
 import { formatPrice } from '@/lib/money'
 
-const PLACEHOLDER = 'https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png'
 
 function ComponentRow({ component }) {
     const {
@@ -17,13 +17,17 @@ function ComponentRow({ component }) {
     return (
         <div className="flex items-center gap-3 py-3">
             <div className="relative shrink-0 size-14 sm:size-16 bg-slate-50 rounded-xl overflow-hidden border border-slate-100">
-                <Image
-                    src={component_image_url || PLACEHOLDER}
-                    alt={component_name}
-                    fill
-                    sizes="64px"
-                    className="object-contain p-1.5"
-                />
+                {component_image_url ? (
+                    <Image
+                        src={component_image_url}
+                        alt={component_name}
+                        fill
+                        sizes="64px"
+                        className="object-contain p-1.5"
+                    />
+                ) : (
+                    <NoPhoto compact />
+                )}
                 {quantity_required > 1 && (
                     <span className="absolute bottom-0.5 right-0.5 bg-slate-800 text-white text-[10px] font-semibold leading-none rounded-full size-5 flex items-center justify-center">
                         {quantity_required}

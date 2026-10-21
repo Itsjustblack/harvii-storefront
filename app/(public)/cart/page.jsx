@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Trash2Icon, AlertCircle } from 'lucide-react'
+import { Trash2Icon, AlertCircle, ImageOff } from 'lucide-react'
 import Counter from '@/components/Counter'
 import CartSummary from '@/components/CartSummary'
 import OthersAlsoBought from '@/components/OthersAlsoBought'
@@ -64,7 +64,7 @@ function ProductThumb({ item }) {
                     className="object-contain w-full h-full rounded-xl"
                 />
             ) : (
-                <div className="text-slate-300 text-xs">img</div>
+                <ImageOff size={20} strokeWidth={1.5} className="text-slate-300" />
             )}
         </div>
     )

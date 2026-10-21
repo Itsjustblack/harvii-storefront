@@ -1,4 +1,5 @@
 "use client";
+import NoPhoto from "./NoPhoto";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,8 +16,6 @@ import { addToCart, buildCartKey } from "@/lib/features/cart/cartSlice";
 import { formatPrice } from '@/lib/money'
 import { notifyAddedToCart } from '@/lib/notifyAddedToCart'
 
-const PLACEHOLDER =
-	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
 
 const ProductDetails = ({ product }) => {
 	const dispatch = useDispatch();
@@ -27,7 +26,7 @@ const ProductDetails = ({ product }) => {
 		...(product.images || []),
 	].filter((v, i, arr) => arr.indexOf(v) === i);
 
-	const [mainImage, setMainImage] = useState(allImages[0] || PLACEHOLDER);
+	const [mainImage, setMainImage] = useState(allImages[0] || "");
 	const [variants, setVariants] = useState({});
 	const [added, setAdded] = useState(false);
 	const [qty, setQty] = useState(1);
@@ -134,9 +133,7 @@ const ProductDetails = ({ product }) => {
 							/>
 						</div>
 					) : (
-						<div className="relative text-black/40 text-xl italic font-semibold">
-							Image not available
-						</div>
+						<NoPhoto />
 					)}
 					{product.category && (
 						<div className="absolute top-4 left-4 flex items-center gap-1.75 bg-white/90 backdrop-blur-sm px-3.25 py-1.75 rounded-full">

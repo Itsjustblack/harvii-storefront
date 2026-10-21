@@ -1,4 +1,5 @@
 "use client";
+import NoPhoto from "./NoPhoto";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
@@ -13,8 +14,6 @@ import VariantPicker, {
 import { formatPrice } from '@/lib/money'
 import { notifyAddedToCart } from '@/lib/notifyAddedToCart'
 
-const PLACEHOLDER =
-	"https://gocart-gs.vercel.app/_next/static/media/product_img4.60bc85fd.png";
 
 export default function QuickAddSheet({ product, isOpen, onClose }) {
 	const dispatch = useDispatch();
@@ -40,7 +39,7 @@ export default function QuickAddSheet({ product, isOpen, onClose }) {
 
 	if (!product) return null;
 
-	const imageUrl = product.image_url || product.images?.[0] || PLACEHOLDER;
+	const imageUrl = product.image_url || product.images?.[0] || "";
 	const variantGroups = product.variant_metadata?.variant_groups;
 	const adjustment = computePriceAdjustment(variantGroups, variants);
 	const unitPrice = Number(product.price) + adjustment;
@@ -102,13 +101,19 @@ export default function QuickAddSheet({ product, isOpen, onClose }) {
 
 				{/* Image */}
 				<div className="m-5 mb-1 bg-[#F5F5F5] rounded-2xl flex items-center justify-center h-64 overflow-hidden">
-					<Image
-						src={imageUrl}
-						alt={product.name}
-						width={400}
-						height={400}
-						className="max-h-56 w-auto object-contain"
-					/>
+					{imageUrl ? (
+						<Image
+							src={imageUrl}
+							alt={product.name}
+							width={400}
+							height={400}
+							className="max-h-56 w-auto object-contain"
+						/>
+					) : (
+						<div className="relative size-full">
+							<NoPhoto />
+						</div>
+					)}
 				</div>
 
 				<div className="px-5 pb-10 pt-3">
