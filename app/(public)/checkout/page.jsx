@@ -60,7 +60,7 @@ function StepContact({ onNext }) {
         phone: checkout.customerInfo.phone || '',
         address: checkout.addressInfo.address || '',
     })
-    const [delivery, setDelivery] = useState(checkout.addressInfo.delivery || null)
+    const [chosenDelivery, setChosenDelivery] = useState(checkout.addressInfo.delivery || null)
     const [options, setOptions] = useState([])
     const [optionsLoading, setOptionsLoading] = useState(true)
 
@@ -76,7 +76,7 @@ function StepContact({ onNext }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!delivery) {
+        if (!chosenDelivery) {
             toast.error('Choose where to deliver first.')
             return
         }
@@ -98,11 +98,11 @@ function StepContact({ onNext }) {
 
             const deliveryData = await submitAddress(slug, token, {
                 address: form.address,
-                delivery_zone_id: delivery.zone_id,
+                delivery_zone_id: chosenDelivery.zone_id,
             })
 
             dispatch(setCustomerInfo({ name: form.name, email: form.email, phone: form.phone }))
-            dispatch(setAddressInfo({ address: form.address, delivery }))
+            dispatch(setAddressInfo({ address: form.address, delivery: chosenDelivery }))
             dispatch(setToken({ token, expiresAt: null }))
             dispatch(setDelivery({
                 fee: deliveryData.delivery_fee,
@@ -129,15 +129,15 @@ function StepContact({ onNext }) {
             ) : (
                 <DeliveryPicker
                     options={options}
-                    value={delivery}
-                    onChange={setDelivery}
+                    value={chosenDelivery}
+                    onChange={setChosenDelivery}
                     onResolve={(q) => resolveDeliveryOption(slug, q)}
                     storeName={config?.store_name}
                 />
             )}
             <button
                 type="submit"
-                disabled={loading || !delivery}
+                disabled={loading || !chosenDelivery}
                 className="w-full py-4 bg-[var(--primary)] text-white rounded-xl font-medium text-sm hover:opacity-90 active:scale-95 transition disabled:opacity-60 mt-4"
             >
                 {loading ? 'Processing…' : 'Continue to Review →'}
