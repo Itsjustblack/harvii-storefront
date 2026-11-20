@@ -1,5 +1,5 @@
 const STEPS = [
-    { full: 'Contact & Address', short: 'Details' },
+    { full: 'Your Details', short: 'Details' },
     { full: 'Review Order', short: 'Review' },
     { full: 'Payment', short: 'Payment' },
 ]

@@ -94,6 +94,13 @@ export default function PaymentStatusPage() {
                         <p className="font-mono font-semibold text-slate-800 text-lg">{orderRef}</p>
                     </div>
                 )}
+                {checkoutData?.fulfilment === 'pickup' && checkoutData?.pickup_location_name && (
+                    <div className="w-full max-w-sm rounded-xl border border-slate-200 px-5 py-4 text-left text-sm">
+                        <p className="text-xs text-slate-400 mb-1">Pick up from</p>
+                        <p className="font-medium text-slate-800">{checkoutData.pickup_location_name}</p>
+                        <p className="text-slate-500 mt-0.5 break-words">{checkoutData.pickup_location_address}</p>
+                    </div>
+                )}
                 <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
                     {orderRef && (
                         <Link href={`/track?${trackParams}`} className="flex-1 text-center py-3 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition">

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { CheckCircle2 } from 'lucide-react'
 import CheckoutProgress from '@/components/CheckoutProgress'
 import DeliveryPicker from '@/components/DeliveryPicker'
+import PickupPicker, { MethodSwitch } from '@/components/PickupPicker'
 import { formatPrice } from '@/lib/money'
 import PaymentInstructions from '@/components/PaymentInstructions'
 import { useStorefront } from '@/context/StorefrontContext'
@@ -26,6 +27,7 @@ import {
     getDeliveryOptions,
     resolveDeliveryOption,
     submitAddress,
+    submitPickup,
     applyPromo,
     removePromo,
     confirmCheckout,
@@ -62,22 +64,39 @@ function StepContact({ onNext }) {
     })
     const [chosenDelivery, setChosenDelivery] = useState(checkout.addressInfo.delivery || null)
     const [options, setOptions] = useState([])
+    const [fulfilment, setFulfilment] = useState(null) // { mode, ready_minutes, locations }
+    const [method, setMethod] = useState(checkout.addressInfo.method || null)
+    const [locationId, setLocationId] = useState(checkout.addressInfo.pickup?.id ?? null)
     const [optionsLoading, setOptionsLoading] = useState(true)
 
     useEffect(() => {
         let cancelled = false
         getDeliveryOptions(slug)
-            .then((data) => { if (!cancelled) setOptions(data.options || []) })
+            .then((data) => {
+                if (cancelled) return
+                setOptions(data.options || [])
+                const f = data.fulfilment || { mode: 'delivery', locations: [] }
+                setFulfilment(f)
+                const pickupOk = ['pickup', 'both'].includes(f.mode) && f.locations?.length > 0
+                setMethod((m) => (f.mode === 'pickup' && pickupOk ? 'pickup' : m === 'pickup' && pickupOk ? 'pickup' : 'delivery'))
+                if (f.locations?.length === 1) setLocationId(f.locations[0].id)
+            })
             .catch(() => {})
             .finally(() => { if (!cancelled) setOptionsLoading(false) })
         return () => { cancelled = true }
     }, [slug])
     const [loading, setLoading] = useState(false)
 
+    const locations = fulfilment?.locations || []
+    const offersBoth = fulfilment?.mode === 'both' && locations.length > 0
+    const isPickup = method === 'pickup'
+    const chosenLocation = locations.find((l) => l.id === locationId) || null
+    const ready = isPickup ? Boolean(chosenLocation) : Boolean(chosenDelivery)
+
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!chosenDelivery) {
-            toast.error('Choose where to deliver first.')
+        if (!ready) {
+            toast.error(isPickup ? 'Choose where to pick up first.' : 'Choose where to deliver first.')
             return
         }
         setLoading(true)
@@ -96,13 +115,17 @@ function StepContact({ onNext }) {
                 currency: 'NGN',
             })
 
-            const deliveryData = await submitAddress(slug, token, {
-                address: form.address,
-                delivery_zone_id: chosenDelivery.zone_id,
-            })
+            const deliveryData = isPickup
+                ? await submitPickup(slug, token, { location_id: chosenLocation.id, phone: form.phone })
+                : await submitAddress(slug, token, { address: form.address, delivery_zone_id: chosenDelivery.zone_id })
 
             dispatch(setCustomerInfo({ name: form.name, email: form.email, phone: form.phone }))
-            dispatch(setAddressInfo({ address: form.address, delivery: chosenDelivery }))
+            dispatch(setAddressInfo({
+                address: isPickup ? '' : form.address,
+                delivery: isPickup ? null : chosenDelivery,
+                method: isPickup ? 'pickup' : 'delivery',
+                pickup: isPickup ? chosenLocation : null,
+            }))
             dispatch(setToken({ token, expiresAt: null }))
             dispatch(setDelivery({
                 fee: deliveryData.delivery_fee,
@@ -119,14 +142,23 @@ function StepContact({ onNext }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 max-w-xl mx-auto">
-            <h2 className="text-lg font-semibold text-slate-800 mb-6">Contact & Delivery</h2>
+            <h2 className="text-lg font-semibold text-slate-800 mb-6">{isPickup ? 'Contact & Pickup' : 'Contact & Delivery'}</h2>
             <InputField label="Full Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Jane Doe" />
             <InputField label="Email" type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="jane@example.com" />
             <InputField label="Phone Number" type="tel" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+234 800 000 0000" />
-            <InputField label="Street Address" required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 Main Street" />
+            {offersBoth && (
+                <div className="space-y-2 pt-2">
+                    <p className="text-xs font-medium text-slate-600">How do you want to get your order?</p>
+                    <MethodSwitch value={method} onChange={setMethod} />
+                </div>
+            )}
             {optionsLoading ? (
-                <p className="text-sm text-slate-400">Loading delivery areas…</p>
+                <p className="text-sm text-slate-400">Loading…</p>
+            ) : isPickup ? (
+                <PickupPicker locations={locations} value={locationId} onChange={setLocationId} readyMinutes={fulfilment?.ready_minutes} />
             ) : (
+                <>
+                <InputField label="Street Address" required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 Main Street" />
                 <DeliveryPicker
                     options={options}
                     value={chosenDelivery}
@@ -134,10 +166,11 @@ function StepContact({ onNext }) {
                     onResolve={(q) => resolveDeliveryOption(slug, q)}
                     storeName={config?.store_name}
                 />
+                </>
             )}
             <button
                 type="submit"
-                disabled={loading || !chosenDelivery}
+                disabled={loading || optionsLoading || !ready}
                 className="w-full py-4 bg-[var(--primary)] text-white rounded-xl font-medium text-sm hover:opacity-90 active:scale-95 transition disabled:opacity-60 mt-4"
             >
                 {loading ? 'Processing…' : 'Continue to Review →'}
@@ -151,7 +184,8 @@ function StepReview({ onNext, onBack }) {
     const dispatch = useDispatch()
     const { slug } = useStorefront()
     const { cartItems } = useSelector((s) => s.cart)
-    const { token, delivery, promo } = useSelector((s) => s.checkout)
+    const { token, delivery, promo, addressInfo } = useSelector((s) => s.checkout)
+    const pickup = addressInfo?.method === 'pickup' ? addressInfo.pickup : null
     const [promoCode, setPromoCode] = useState(promo?.code || '')
     const [promoLoading, setPromoLoading] = useState(false)
     const [confirmLoading, setConfirmLoading] = useState(false)
@@ -262,10 +296,20 @@ function StepReview({ onNext, onBack }) {
                     <span>Items</span>
                     <span>{formatPrice(delivery.item_total)}</span>
                 </div>
-                <div className="flex justify-between">
-                    <span>Delivery</span>
-                    <span>{formatPrice(delivery.fee)}</span>
-                </div>
+                {pickup ? (
+                    <div className="flex justify-between gap-4">
+                        <span className="shrink-0">Pickup</span>
+                        <span className="min-w-0 text-right">
+                            <span className="block font-medium text-slate-800">{pickup.name}</span>
+                            <span className="block text-xs text-slate-400">{pickup.address}</span>
+                        </span>
+                    </div>
+                ) : (
+                    <div className="flex justify-between">
+                        <span>Delivery</span>
+                        <span>{formatPrice(delivery.fee)}</span>
+                    </div>
+                )}
                 {promo && Number(promo.discount_amount) > 0 && (
                     <div className="flex justify-between text-green-600">
                         <span>Discount</span>
